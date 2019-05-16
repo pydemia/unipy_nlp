@@ -1,7 +1,8 @@
 <<<<<<< HEAD
 # User-Defined files
 data/**
-.vscode/**
+*.vscode/**
+*.code-workspace*
 *.ipynb
 .ftpconfig*
 .sftpconfig*
