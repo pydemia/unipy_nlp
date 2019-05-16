@@ -248,7 +248,7 @@ def refine_content(df):
 
 
 #%%
-def loop_sheets(key, xlsx_loaded):
+def convert_excel_to_dict(key, xlsx_loaded):
 
     if isinstance(xlsx_loaded, OrderedDict):
         for sheet in xlsx_loaded:
@@ -263,7 +263,7 @@ def loop_sheets(key, xlsx_loaded):
 
 
 #%%
-rdict = {k: loop_sheets(k, d) for k, d in ddict.items()}
+rdict = {k: convert_excel_to_dict(k, d) for k, d in ddict.items()}
 
 #%% [markdown]
 # ### Dump to `json`
