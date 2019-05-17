@@ -1,6 +1,8 @@
 <<<<<<< HEAD
 # User-Defined files
 data/**
+*.vocab
+*.model
 *.vscode/**
 *.code-workspace*
 *.ipynb

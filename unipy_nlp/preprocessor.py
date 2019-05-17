@@ -125,9 +125,14 @@ def get_data_from_es(
         }
 
     query_body = {'query': query_match}
+    count_q = es_conn_object.search(
+        index=index,
+        body=query_body,
+    )['hits']['total']
     result_q = es_conn_object.search(
         index=index,
         body=query_body,
+        size=count_q,
     )['hits']['hits']
 
     return pd.DataFrame(q['_source'] for q in result_q)
@@ -194,15 +199,178 @@ def train_spm(
     )
     spm.SentencePieceTrainer.Train(command_train)
 
+    os.system(f'rm {spm_source_file}')
+
 
 def load_spm(
         model_name,
-        ):
-    
+        use_bos=False,
+        use_eos=False,
+        vocab_min_freq_threshold=None,
+        ):  
+    model_filename = f'{model_name}.model'  
     sp = spm.SentencePieceProcessor()
-    sp.Load(model_name)
-    # sp.SetEncodeExtraOptions('eos:bos')
-    # sp.LoadVocabulary(
-    #     f'{model_name}.vocab',
-    #     VOCAB_MIN_THRESHOLD,
-    # )
+    sp.Load(model_filename)
+
+    if use_bos:
+        sp.SetEncodeExtraOptions('bos')
+    if use_eos:
+        sp.SetEncodeExtraOptions('eos')
+    if vocab_min_freq_threshold is not None:
+        sp.LoadVocabulary(
+            f'{model_name}.vocab',
+            vocab_min_freq_threshold,
+        )
+
+    return sp
+
+
+def compute_coherence_values(
+        dictionary, corpus, id2word, texts,
+        num_topic_list=[5, 10],
+        lda_typ='default',  # {'default', 'mallet'}
+        random_seed=1,
+):
+    """
+    Compute c_v coherence for various number of topics
+
+    Parameters:
+    ----------
+    dictionary : Gensim dictionary
+    corpus : Gensim corpus
+    texts : List of input texts
+    limit : Max num of topics
+
+    Returns:
+    -------
+    model_list : List of LDA topic models
+    coherence_values : Coherence values corresponding to the LDA model with respective number of topics
+    """
+    model_list = []
+    coherence_list = []
+
+    if random_seed:
+        random.seed(random_seed)
+        np.random.seed(random_seed)
+    if lda_typ == 'default':
+        for num_topics in num_topic_list:
+            model = gensim.models.LdaMulticore(
+                corpus,
+                num_topics=num_topics,
+                id2word=id2word,
+                passes=2,
+                workers=8,
+                eta='symmetric',
+                decay=.8,  # {.5, 1.}
+                per_word_topics=False,
+                offset=1.,
+                iterations=30,
+                gamma_threshold=.001,  # 0.001,
+                minimum_probability=.05,  # .01,
+                minimum_phi_value=.01,
+                random_state=1,
+            )
+            coherence_model = gensim.models.CoherenceModel(
+                model=model,
+                texts=texts,
+                dictionary=id2word,
+                coherence='c_v',
+            )
+
+            model_list += [model]
+            coherence_list += [coherence_model.get_coherence()]
+
+    elif lda_typ == 'hdp':
+        for num_topics in num_topic_list:
+            model = gensim.models.HdpModel(
+                corpus,
+                id2word=id2word,
+                T=3,
+                # alpha=,
+                K=num_topics,
+                # gamma=,
+                # decay=.5, # {.5, 1.}
+                # per_word_topics=True,
+                # minimum_probability=.1,
+                # minimum_phi_value=.01,
+                random_state=1,
+            )
+            coherence_model = gensim.models.CoherenceModel(
+                model=model,
+                texts=texts,
+                dictionary=id2word,
+                coherence='c_v',
+            )
+
+            model_list += [model]
+            coherence_list += [coherence_model.get_coherence()]
+
+    elif lda_typ == 'mallet':
+        # Download File: http://mallet.cs.umass.edu/dist/mallet-2.0.8.zip
+        mallet_url = 'http://mallet.cs.umass.edu/dist/mallet-2.0.8.zip'
+        mallet_filename = mallet_url.split('/')[-1]
+        mallet_unzipped_dirname = mallet_filename.split('.zip')[0]
+        mallet_path = f'{mallet_unzipped_dirname}/bin/mallet'
+
+        import zipfile
+        import urllib
+
+        if not os.path.exists(mallet_path):
+            # download the url contents in binary format
+            urllib.urlretrieve(mallet_url, mallet_filename)
+
+            # open method to open a file on your system and write the contents
+            with zipfile.ZipFile(mallet_filename, "r") as zip_ref:
+                zip_ref.extractall(mallet_unzipped_dirname)
+
+        for num_topics in num_topic_list:
+            model = gensim.models.wrappers.LdaMallet(
+                mallet_path,
+                corpus=corpus,
+                num_topics=num_topics,
+                id2word=id2word,
+            )
+            coherence_model = gensim.models.CoherenceModel(
+                model=model,
+                texts=texts,
+                dictionary=id2word,
+                coherence='c_v',
+            )
+
+            model_list += [model]
+            # coherence_list += [coherence_model.get_coherence()]
+
+    return model_list, coherence_list
+
+
+# Print the coherence scores
+def pick_best_n_topics(dictionary, corpus, texts, lda_typ='default'):
+
+    model_list, coherence_values = compute_coherence_values(
+        dictionary=dictionary,
+        corpus=corpus,
+        id2word=dictionary,
+        texts=texts,
+        num_topic_list=[5, 7, 10, 12, 15, 17, 20],
+        lda_typ=lda_typ,
+        #  start=2, limit=40, step=6,
+    )
+
+    paired = zip(model_list, coherence_values)
+    ordered = sorted(paired, key=lambda x: x[1], reverse=True)
+    best_model = ordered[0][0]
+
+    model_topicnum_list = []
+    for i, (m, cv) in enumerate(zip(model_list, coherence_values)):
+        topic_num = m.num_topics
+        coh_value = round(cv, 4)
+        print(
+            f'[{i}] Num Topics ({topic_num:2})' +
+            f' has Coherence Value of {coh_value}'
+        )
+        model_topicnum_list += [(topic_num, m)]
+
+    model_dict = dict(model_topicnum_list)
+    print(f'Best N topics: {best_model.num_topics}')
+
+    return best_model, model_list, model_dict, coherence_values
