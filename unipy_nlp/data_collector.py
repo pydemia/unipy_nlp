@@ -13,27 +13,25 @@ import sys
 import json
 import random
 import warnings
+import subprocess
 import itertools as it
 import functools as ft
-import unidecode
-from unicodedata import normalize
+import collections
 from glob import glob
 from pprint import pprint
-from collections import OrderedDict
 import numpy as np
 import pandas as pd
-import matplotlib as mpl
-import matplotlib.pyplot as plt
+import unidecode
+from unicodedata import normalize
+
 import matplotlib.font_manager as fm
 
 
-# warnings.filterwarnings('ignore')
-warnings.filterwarnings("ignore", category=DeprecationWarning)
-warnings.filterwarnings("ignore", category=FutureWarning)
-
-# %%
+# warnings.filterwarnings("ignore", category=DeprecationWarning)
+# warnings.filterwarnings("ignore", category=FutureWarning)
 
 import subprocess
+
 
 font_dict = {
     path.split('/')[-1][:-4]: path
@@ -45,39 +43,28 @@ for _font_nm, _font_file in font_dict.items():
     subprocess.call(['cp', _font_file, './unipy_nlp/_resources/fonts/'])
 
 
-
-#%%
-
-def read_xlsx_all_sheets(filename):
-    print(f"Loading '{filename}'...")
+def read_xlsx_all_sheets(filepath):
+    print(f"Loading '{filepath}'...")
     res = pd.read_excel(
-        filename,
+        filepath,
         sheet_name=None,
         header=None, names=['content'],
         dtype=str,
         encoding='utf-8',
-        # encoding='ascii',
-        # encoding='ISO-8859-1',
     )
     return res
 
 
-def read_xlsx_usymp(filename):
-    print(f"Loading '{filename}'...")
+def read_xlsx_usymp(filepath):
+    print(f"Loading '{filepath}'...")
     sheet_name = 'Clientes'
     tmp = pd.read_excel(
-        filename, # '../data/saveasnew/rawdata_usymphony_saveasnew.xlsx',
+        filepath,
         sheet_name=sheet_name,
-        # header=None, names=['content'],
         dtype=str,
         encoding='utf-8',
-        # encoding='ascii',
-        # encoding='ISO-8859-1',
-        # na_values='nan',
-        # keep_default_na=True,
     ).replace('nan', np.NaN)
 
-    # tmp = full_df['Clientes']
     tmp.columns = [
         c.replace('Unnamed: ', 'un_')
         if 'Unnamed: ' in c
@@ -132,12 +119,11 @@ def read_xlsx_usymp(filename):
         .apply(lambda x: collect_reply(tmp, x))
         .apply(lambda x: '\n'.join(x))
     )
-#     tmp['reply_joined'] = (
-#         tmp['reply']
-#         .apply(lambda x: '\n'.join(x))
-#     )
+    # tmp['reply_joined'] = (
+    #     tmp['reply']
+    #     .apply(lambda x: '\n'.join(x))
+    # )
     tmp = tmp[['title', 'body', 'reply']].dropna().reset_index(drop=True)
-    # tmp['content'] = tmp.values.sum(axis=1)
     tmp['content'] = (
         pd.Series(
             tmp[tmp.columns.drop('reply')]
@@ -148,7 +134,30 @@ def read_xlsx_usymp(filename):
         .str.join('\n')
     )
 
-    return OrderedDict({sheet_name: tmp})
+    return collections.OrderedDict({sheet_name: tmp})
+
+
+def load_from_excel(filepath) -> collections.Generator:
+
+    fpath = filepath
+    dump_path = f'{fpath}/_tmp_dump'
+    if not os.path.isdir(dump_path):
+        os.makedirs(dump_path, exist_ok=False)
+        print(f"'Results will be saved in {dump_path}")
+
+    filepath_list = glob(f'{fpath}/saveasnew/*.xlsx')
+    category_list = [
+        re.findall(r'.*rawdata_(.+)_saveasnew.xlsx', s)[0]
+        for s in filepath_list
+    ]
+    loaded_gen = (
+        (category,
+            read_xlsx_all_sheets(filepath)
+            if 'usymphony' not in category
+            else read_xlsx_usymp(filepath)
+         )
+        for category, filepath in zip(category_list, filepath_list)
+    )
 
 
 def _repl(mat, ri=re.compile(r'([\.\,\'\"]+\s*)')):
@@ -290,7 +299,7 @@ def refine_content(df) -> pd.DataFrame:
 
 def refine_nested_excel_to_dict(xlsx_loaded) -> pd.DataFrame:
 
-    if isinstance(xlsx_loaded, OrderedDict):
+    if isinstance(xlsx_loaded, collections.OrderedDict):
         for sheet_name in xlsx_loaded.keys():
             print(f"{sheet_name}")
             xlsx_loaded[sheet_name] = refine_content(xlsx_loaded[sheet_name])
@@ -300,10 +309,8 @@ def refine_nested_excel_to_dict(xlsx_loaded) -> pd.DataFrame:
 
     else:
         raise TypeError(
-            '`xlsx_loaded` must be an `OrderedDict` with its sheet name.'
+            '`xlsx_loaded` must be an `collections.OrderedDict` with its sheet name.'
         )
-    #     print(f'{key}')
-    #     xlsx_loaded = refine_content(xlsx_loaded)
 
     return xlsx_loaded
 
@@ -324,54 +331,6 @@ def split_and_filter(
     return filtered
 
 
-def refine_content_2nd(dataframe, colname_str):
-
-    ptn_a_s = re.compile(
-        r'[\_\·\♬\<\>\(\)\[\]\{\}\*\'\"\-\+\~\|⓪①②③④⑤⑥⑦⑧⑨⑩]+'  # \à\è
-    )
-    ptn_a_t = r' '
-    ptn_b_s = re.compile(r'[\^]{2,}')
-    ptn_b_t = r'\^\^\n'
-    ptn_c_s = re.compile(r'([^\s]+[음임함됨요(니다)])[\W]{1,}')
-    ptn_c_t = r'\1\n'
-    ptn_d_s = re.compile(r'[\.{2,}\!\?]+[\s]+|[\s]{3,}')
-    ptn_d_t = r'\n'
-    ptn_e_s = re.compile(r'[\s]{2,}|[(nbsp)]+')
-    ptn_e_t = r' '
-    ptn_f_s = re.compile(r'( [\s\D]+/[\s\w]+/sk[;]*)')
-    ptn_f_t = r''
-    ptn_g_s = re.compile(r'[(subject:)|(re:)]+')
-    ptn_g_t = r''
-    ptn_h_s = re.compile(
-        r'^(\s*\d{4} [\d]{1,2}:\d{2} [ap]{1}m[\s]{0,1}to:){0,1} (.+)'
-    )
-    ptn_h_t = r'\2'
-    ptn_i_s = r'([\s\D]+/[\s\w]+/sk[;]*)'
-    ptn_i_t = r''
-
-    ptn_tuple = (
-        (ptn_a_s, ptn_a_t),
-        (ptn_b_s, ptn_b_t),
-        (ptn_c_s, ptn_c_t),
-        (ptn_d_s, ptn_d_t),
-        (ptn_e_s, ptn_e_t),
-        (ptn_f_s, ptn_f_t),
-        (ptn_g_s, ptn_g_t),
-        (ptn_h_s, ptn_h_t),
-        (ptn_i_s, ptn_i_t),
-    )
-
-    dataframe[colname_str] = (
-        recursive_substitutor(
-            dataframe[colname_str],
-            pattern_list=list(ptn_tuple),
-        )
-        .str.lower()
-    )
-
-    return dataframe
-
-
 def split_and_expand_str_rows(dataframe, colname_str, split_by='\n'):
     expanded_df = dataframe.drop([colname_str], axis=1).join(
         dataframe
@@ -382,11 +341,20 @@ def split_and_expand_str_rows(dataframe, colname_str, split_by='\n'):
         .rename(colname_str)
     ).reset_index(drop=True)
 
-    return (
+    expanded_df = (
         expanded_df
-        .loc[~expanded_df['contents'].isin(["", " "]), :]
+        .loc[~expanded_df[colname_str].isin(["", " "]), :]
         .reset_index(drop=True)
     )
+
+    expanded_df[colname_str] = (
+        expanded_df
+        [colname_str]
+        .str.strip()
+        # .str.replace(r'(^\s+|\s+$)', r'')
+    )
+
+    return expanded_df
 
 
 def collect_data(filepath, dump_json_ok=True):

@@ -1,93 +1,128 @@
 """Test Code Here.
 """
 
-
 # %%
 
+import elasticsearch as els
+from elasticsearch import Elasticsearch
 import os
 import re
 from glob import glob
 import importlib
 import pandas as pd
-import unipy_nlp.data_collector as udc
+import subprocess
+from unicodedata import normalize
+import unipy_nlp.data_collector as before
+import unipy_nlp.preprocessor as uprc
+from hunspell import HunSpell
 
-importlib.reload(udc)
-importlib.reload
-
-# %%
-
-data_path = './data'
-
-fpath = data_path
-dump_path = f'{fpath}/_tmp_dump'
-if not os.path.isdir(dump_path):
-    os.makedirs(dump_path, exist_ok=False)
-    print(f"'Results will be saved in {dump_path}")
-
-filepath_list = glob(f'{fpath}/saveasnew/*.xlsx')
-category_list = [
-    re.findall(r'.*rawdata_(.+)_saveasnew.xlsx', s)[0]
-    for s in filepath_list
-]
-
-loaded_gen = (
-    (category,
-        udc.read_xlsx_all_sheets(filepath)
-        if 'usymphony' not in category
-        else udc.read_xlsx_usymp(filepath)
-    )
-    for category, filepath in zip(category_list, filepath_list)
-)
-refined_gen = (
-    (category, udc.refine_nested_excel_to_dict(excel_data))
-    for category, excel_data in loaded_gen
-)
-flatted_gen = (
-    {
-        'table_nm': table_nm,
-        'sheet_nm': sheet_nm,
-        'contents': contents,
-    }
-    for table_nm, table_contents in refined_gen
-    for sheet_nm, sheet_contents in table_contents.items()
-    for contents in sum(list(sheet_contents.values()), [])
-    # for contents in udc.split_and_filter(sheet_contents.values())
-)
-_tmp_df = pd.DataFrame(flatted_gen).drop_duplicates()
-except_cols = _tmp_df.columns.drop('contents').tolist()
-_tmp_df = (
-    _tmp_df
-    .groupby(except_cols)
-    ['contents']
-    .apply(lambda x: ' '.join(x))
-    .reset_index()
-)
-
-# %%
-# _tmp_df = udc.refine_content_2nd(
-#     _tmp_df,
-#     colname_str='contents',
-# )
-_tmp_df = udc.split_and_expand_str_rows(
-    _tmp_df,
-    colname_str='contents',
-    split_by=r'\n',
-)
+importlib.reload(before)
+importlib.reload(uprc)
 
 
-# %%
-print(_tmp_df.shape)
-_tmp_df.to_json(
-    f'{dump_path}/rawdata_cpred_flatted.json',
+# %% BEFORE STEP: data_collector
+
+# _tmp_df = before.collect_data('./data', dump_json_ok=False)
+_tmp_df = pd.read_json(
+    './data/_tmp_dump/rawdata_cpred_flatted.json',
     orient='records',
-    force_ascii=False,
+    encoding='utf-8',
     lines=True,
 )
-_tmp_df['contents'].apply(len).hist()
+
+# %% Get Data from Elasticsearch
+
+ES_HOST = '52.78.243.101'
+ES_PORT = '9200'
+
+es = Elasticsearch(
+    [
+        {
+            'host': ES_HOST,
+            'port': int(ES_PORT),
+            # 'url_prefix': 'es',
+            'use_ssl': False,
+        },
+    ]
+)
+
+_tmp_df = uprc.get_data_from_es(
+    es,
+    index='happymap_temp',
+    match_as_flat_dict={
+        'sheet_nm': '17년',
+        'table_nm': 'culture_survey',
+    }
+)
+
+sentence_list = _tmp_df['contents'].tolist()
+
 
 # %%
+sentence_list[:10]
 
-_tmp_df = udc.collect_data('./data', dump_json_ok=True)
+#%% Option: Spell Check
+
+hunspell_path = './unipy_nlp/_resources/hunspell'
+spell_checker = HunSpell(
+    f'{hunspell_path}/ko.dic',
+    f'{hunspell_path}/ko.aff',
+)
+spell_checker.add('수펙스')  # User-Defined Dictionary
+
+
+asent = "무궁화 꽃이 피었읍니다"
+print(asent)
+print('spell', [spell_checker.spell(s) for s in asent.split(r' ')])
+print('suggest', [spell_checker.suggest(s) for s in asent.split(r' ')])
+print('analyze', [spell_checker.analyze(s) for s in asent.split(r' ')])
+
+for _ in sentence_list[:10]:
+    print(f'before: {_}')
+    print(f'after : {uprc.spell_corrector(_)}\n')
+
+#%% 
+
+spm_source_joined_str = '\n'.join(sentence_list)
+spm_source_file = f'./data/full_sentence.txt'
+with open(spm_source_file, 'w') as file:
+    file.write(spm_source_joined_str)
+
+SPM_VOCAB_SIZE = 50000
+SPM_MODEL_TYPE = 'word'  # {unigram (default), bpe, char, word}
+SPM_MODEL_NAME = f'happy_spm_{SPM_MODEL_TYPE}_{SPM_VOCAB_SIZE}'
+
+command_train = ' '.join(
+    [
+        # 'spm_train',
+        f'--input={new_file}',
+        f'--model_prefix={SPM_MODEL_NAME}',
+        '' if SPM_MODEL_TYPE == 'word' else f'--vocab_size={SPM_VOCAB_SIZE}',
+        f'--character_coverage=0.9995',
+        # '--seed_sentencepiece_size=10000',
+        # f'--pieces_size={SPM_VOCAB_SIZE}',
+        f'--model_type={SPM_MODEL_TYPE}',
+        f'--input_sentence_size={len(sentenced)}',
+        # f'--max_sentencepiece_length={max(map(len, sentenced))}',
+        f'--max_sentencepiece_length={512}',
+    ],
+)
+#%%
+
+subprocess
+pkg_list = ['g++', 'openjdk-7-jdk', 'python-dev', 'python3-dev']
+#%%
+os.getcwd()
+# %%
+pkg_list = ['g++', 'openjdk-7-jdk', 'python-dev', 'python3-dev']
+os.system(
+    ';'.join([
+        'cd ./unipy_nlp/_resources/pkgs',
+        *[f'apt-get download {pkg}' for pkg in pkg_list],
+        'cd ../../../',
+    ])
+)
+# os.system('cd ./unipy_nlp/_resources/pkgs')
 
 
 #%%
