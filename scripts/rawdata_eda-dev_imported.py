@@ -468,7 +468,6 @@ def loop_substitutor(joined_str, pattern_list):
     else:
         return joined_str
 
-
 #%%
 ptn_a_s = re.compile(
     r'[\_\·\♬\<\>\(\)\[\]\{\}\*\'\"\-\+\~\|⓪①②③④⑤⑥⑦⑧⑨⑩]+' # \à\è
@@ -1165,7 +1164,7 @@ def compute_coherence_values(
                 minimum_phi_value=.01,
                 random_state=1,
             )
-            coherence_model = CoherenceModel(
+            coherence_model = gensim.models.CoherenceModel(
                 model=model,
                 texts=texts,
                 dictionary=id2word,
@@ -1367,7 +1366,11 @@ pyLDAvis.display(prepared_data, local=False)
 #%%
 def get_saliency(tinfo_df):
     """Calculate Saliency for terms within a topic.
-    
+
+    $$ distinctiveness(w) = \sum P(t \vert w) log\frac{P(t \vert w)}{P(w)} $$
+    $$ saliency(w) = P(w) \times distinctiveness(w) $$
+    <div align="right">(Chuang, J., 2012. Termite: Visualization techniques for assessing textual topic models)</div>
+
     Parameters
     ----------
     tinfo: pandas.DataFrame
@@ -1390,7 +1393,11 @@ def get_saliency(tinfo_df):
 #%%
 def get_relevance(tinfo_df, l=.6):
     """Calculate Relevances with a given lambda value.
-    
+
+    # $$ relevance(t,w) = \lambda \cdot P(w \vert t) + (1 - \lambda) \cdot \frac{P(w \vert t)}{P(w)} $$
+    <div align="center"> Recommended $\lambda = 0.6$ </div>
+    <div align="right">(Sievert, C., 2014. LDAvis: A method for visualizing and interpreting topics)</div>
+
     Parameters
     ----------
     tinfo: pandas.DataFrame

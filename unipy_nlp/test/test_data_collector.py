@@ -1,7 +1,7 @@
 """Test Code Here.
 """
 
-
+# %%
 import os
 import re
 from glob import glob
@@ -30,7 +30,8 @@ category_list = [
 
 # %% Data Loading: from Excel
 loaded_gen = (
-    (category,
+    (
+        category,
         udc.read_xlsx_all_sheets(filepath)
         if 'usymphony' not in category
         else udc.read_xlsx_usymp(filepath)

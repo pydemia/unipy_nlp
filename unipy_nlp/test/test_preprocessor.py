@@ -5,6 +5,8 @@
 
 import elasticsearch as els
 from elasticsearch import Elasticsearch
+from hunspell import HunSpell
+
 import os
 import re
 import json
@@ -19,7 +21,6 @@ import pyLDAvis.gensim as gensimvis
 from unicodedata import normalize
 import unipy_nlp.data_collector as before
 import unipy_nlp.preprocessor as uprc
-from hunspell import HunSpell
 
 importlib.reload(before)
 importlib.reload(uprc)

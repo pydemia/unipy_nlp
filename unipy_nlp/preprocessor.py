@@ -6,6 +6,8 @@ Created on Tue May 14 11:14:19 2019
 """
 
 
+import elasticsearch as els
+from elasticsearch import Elasticsearch
 from hunspell import HunSpell
 import os
 import re
@@ -22,6 +24,7 @@ from pprint import pprint
 import numpy as np
 import pandas as pd
 
+from konlpy.tag import Mecab
 import gensim
 import sentencepiece as spm
 
@@ -139,6 +142,7 @@ def get_data_from_es(
 
 
 def get_wanted_morphs(s, wanted_tags):
+        tagger = Mecab()
         res_pos = tagger.pos(s)
 
         res = list(
@@ -273,3 +277,181 @@ def spm_encode(
         ]
 
     return spmed
+
+
+class Preprocessor(object):
+
+    def __init__(
+            self,
+            ):
+        self.SPM_MODEL_NAME = None
+
+    
+    def read_json(
+            self,
+            filename,
+            ):
+
+        self.data = pd.read_json(
+            filename,
+            orient='records',
+            encoding='utf-8',
+            lines=True,
+        )
+        self.sentences = self.data['contents'].tolist()
+
+
+    def read_es(
+            self,
+            host,
+            port,
+            index='happymap_temp',
+            match_as_flat_dict=None,
+            ):
+        es = Elasticsearch(
+            [
+                {
+                    'host': host,
+                    'port': int(port),
+                    'use_ssl': False,
+                },
+            ]
+        )
+
+        self.data = get_data_from_es(
+            es,
+            index=index,
+            match_as_flat_dict=match_as_flat_dict,
+        )
+        self.sentences = self.data['contents'].tolist()
+
+
+    def train_spm(
+            self,
+            source_type='list',  # {'list', 'txt'}
+            model_type='bpe',
+            vocab_size=50000,
+            model_name='spm_trained',
+            random_seed=None,
+            ):
+
+        self.SPM_MODEL_NAME = model_name
+
+        source = self.sentences
+
+        if random_seed:
+            random.seed(random_seed)
+            np.random.seed(random_seed)
+
+        if source_type == 'list':
+            spm_source_joined_str = '\n'.join(source)
+            spm_source_file = f'./data/_tmp.txt'
+            with open(spm_source_file, 'w') as file:
+                file.write(spm_source_joined_str)
+            input_size_int = len(source)
+
+        elif source_type == 'txt':
+            spm_source_file = source
+            input_size_int = raw_in_count(spm_source_file)
+
+        else:
+            raise TypeError(
+                "`source_type` should be one of `{'list', 'txt'}`."
+            )
+
+        command_train = ' '.join(
+            [
+                # 'spm_train',
+                f'--input={spm_source_file}',
+                f'--model_prefix={model_name}',
+                '' if model_type == 'word' else f'--vocab_size={vocab_size}',
+                f'--character_coverage=0.9995',
+                f'--hard_vocab_limit={str(False).lower()}',
+                # '--seed_sentencepiece_size=10000',
+                # f'--pieces_size={SPM_VOCAB_SIZE}',
+                f'--model_type={model_type}',
+                f'--input_sentence_size={input_size_int}',
+                # f'--max_sentencepiece_length={max(map(len, sentenced))}',
+                f'--max_sentencepiece_length={512}',
+                f'--num_sub_iterations={10}',
+                f'--num_threads={16}',
+                f'--unk_id=0',
+                f'--bos_id=1',
+                f'--eos_id=2',
+                f'--pad_id=3',
+            ],
+        )
+        spm.SentencePieceTrainer.Train(command_train)
+
+        os.system(f'rm {spm_source_file}')
+    
+    def load_spm(
+            self,
+            model_name=None,
+            use_bos=False,
+            use_eos=False,
+            vocab_min_freq_threshold=None,
+            ):
+        if (model_name is None) and (self.SPM_MODEL_NAME is not None):
+            model_name = self.SPM_MODEL_NAME
+        else:
+            raise AttributeError(
+                ' '.join([
+                    'An inappropriate `model_name` is given.',
+                    'Call `train_spm` to train a new spm model or',
+                    'input a proper value on `model_name`.',
+                ])
+            )
+        model_filename = f'{model_name}.model'
+        sp = spm.SentencePieceProcessor()
+        sp.Load(model_filename)
+
+        if use_bos:
+            sp.SetEncodeExtraOptions('bos')
+        if use_eos:
+            sp.SetEncodeExtraOptions('eos')
+        if vocab_min_freq_threshold is not None:
+            sp.LoadVocabulary(
+                f'{model_name}.vocab',
+                vocab_min_freq_threshold,
+            )
+        
+        self.spm_model = sp
+
+
+    def spm_encode(
+            self,
+            input_list,
+            type='piece',  # {'id', 'piece'}
+            rm_space=True,
+            ):
+        
+        spm_model = self.spm_model
+        if type == 'piece':
+            spmed = [
+                spm_model.EncodeAsPieces(l)
+                for l in input_list
+            ]
+        elif type == 'id':
+            spmed = [
+                spm_model.EncodeAsIds(l)
+                for l in input_list
+            ]
+        else:
+            raise TypeError(
+                "`input_list` should be one of `{'list', 'txt'}`."
+            )
+
+        if rm_space:
+            spmed = [
+                list(
+                    filter(
+                        lambda x: len(x) > 1,
+                        (t.replace('▁', '') for t in l)
+                    )
+                )
+                for l in spmed
+            ]
+
+        return spmed
+
