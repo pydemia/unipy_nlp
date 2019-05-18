@@ -93,4 +93,8 @@ _tmp_df['contents'].apply(len).hist()
 
 # %% ALL IN ONE
 
-_tmp_df = udc.collect_data('./data', dump_json_ok=True)
+_tmp_df, _tmp_filename = udc.collect_data(
+    './data',
+    dump_json_ok=True,
+    return_tuple=True,
+)

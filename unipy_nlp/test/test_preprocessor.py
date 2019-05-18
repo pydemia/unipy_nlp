@@ -27,9 +27,14 @@ importlib.reload(uprc)
 
 # %% BEFORE STEP: data_collector
 
-# _tmp_df = before.collect_data('./data', dump_json_ok=False)
+# _tmp_df, _tmp_filename = uprc.collect_data(
+#     './data',
+#     dump_json_ok=True,
+#     return_tuple=True,
+# )
+_tmp_filename = './data/_tmp_dump/rawdata_cpred_flatted.json'
 _tmp_df = pd.read_json(
-    './data/_tmp_dump/rawdata_cpred_flatted.json',
+    _tmp_filename,
     orient='records',
     encoding='utf-8',
     lines=True,
@@ -214,7 +219,15 @@ pyLDAvis.save_html(prepared_data, LDA_HTML)
 pyLDAvis.save_json(prepared_data, LDA_JSON)
 
 # %%
-pyLDAvis.display(prepared_data, local=False)
+# pyLDAvis.display(prepared_data, local=False)
+
+
+# %%
+#%% [markdown]
+# $$ distinctiveness(w) = \sum P(t \vert w) log\frac{P(t \vert w)}{P(w)} $$
+# $$ saliency(w) = P(w) \times distinctiveness(w) $$
+#
+# <div align="right">(Chuang, J., 2012. Termite: Visualization techniques for assessing textual topic models)</div>
 
 # %%
 
@@ -234,5 +247,8 @@ os.system(
 )
 # os.system('cd ./unipy_nlp/_resources/pkgs')
 
+
+# %%
+subprocess
 
 #%%

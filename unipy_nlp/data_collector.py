@@ -357,7 +357,7 @@ def split_and_expand_str_rows(dataframe, colname_str, split_by='\n'):
     return expanded_df
 
 
-def collect_data(filepath, dump_json_ok=True):
+def collect_data(filepath, dump_json_ok=True, return_tuple=True):
 
     fpath = filepath
     dump_path = f'{fpath}/_tmp_dump'
@@ -410,11 +410,20 @@ def collect_data(filepath, dump_json_ok=True):
     )
     print(f"\nResult: {res_df.shape}")
 
+    dump_filename = None
     if dump_json_ok:
+        dump_filename = f'{dump_path}/rawdata_cpred_flatted.json'
         res_df.to_json(
-            f'{dump_path}/rawdata_cpred_flatted.json',
+            dump_filename,
             orient='records',
             force_ascii=False,
             lines=True,
         )
-    return res_df
+    
+    if return_tuple:
+        return res_df, dump_filename
+    else:
+        return {
+            'data': res_df,
+            'filename': dump_filename,
+        }
