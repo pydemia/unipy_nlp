@@ -1,4 +1,4 @@
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """
 Created on Tue May 14 15:41:19 2019
 Modified on Tue May 14 15:41:19 2019
@@ -22,9 +22,9 @@ from distutils.cmd import Command
 
 # Package Description
 
-package_name = 'unipy'
+package_name = 'unipy_nlp'
 package_version = '0.0.1'
-short_desc = 'Useful tools for Data Scentists'
+short_desc = 'NLP Tools for Data Scientist.'
 package_source = '{name}-{version}.tar.gz'.format(
     name=package_name,
     version=package_version,
@@ -33,8 +33,12 @@ license_family_str = 'MIT'
 license_str = 'MIT License'
 modified_time = dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-git_url = 'https://github.com/pydemia/{package_name}'.format(package_name=package_name)
-doc_url = 'https://{package_name}.readthedocs.io/en/latest/index.html'.format(package_name=package_name)
+git_url = 'https://github.com/pydemia/{package_name}'.format(
+    package_name=package_name
+)
+doc_url = 'https://{package_name}.readthedocs.io/en/latest/index.html'.format(
+    package_name=package_name
+)
 
 
 with open('README.rst', 'r', encoding='utf-8') as readme_file:
@@ -57,7 +61,7 @@ __all__ = ['__version__']
 __version__ = '{package_version}'
 
 '''
-with open('unipy_db/__version__.py', 'w') as f:
+with open('unipy_nlp/__version__.py', 'w') as f:
     version_py_str = version_py_strfmt.format(
         modified_time=modified_time,
         package_version=package_version,
@@ -66,7 +70,7 @@ with open('unipy_db/__version__.py', 'w') as f:
 
 
 def package_data_listup():
-    filename = '_dataset/resources.gz/resources.tar.gz'
+    filename = '_resources/resources.gz/resources.tar.gz'
     tar = tarfile.open(filename)
     filelist = list(set(map(lambda x: x.split('/')[0], tar.getnames())))
     filelist.sort()
@@ -76,8 +80,12 @@ def package_data_listup():
 with open('REQUIREMENTS.txt', 'r') as f:
     header, *required_packages = f.readlines()
 
-required_on_run = '\n' + '\n'.join([(' ' * 4) + '- {dep}'.format(dep=dep)
-    for dep in (['python'] + required_packages)])
+required_on_run = (
+    '\n' + '\n'.join([
+        (' ' * 4) + '- {dep}'.format(dep=dep)
+        for dep in (['python'] + required_packages)
+    ])
+)
 required_on_build = '\n' + (' ' * 4) + '- setuptools' + required_on_run
 
 
@@ -102,34 +110,39 @@ class SphinxCommand(Command):
         subprocess.check_call(command)
 
 
-setup(name=package_name,
-      version=package_version,
-      description='Useful tools for Data Scientists',
-      long_description=long_desc,
-      python_requires='>= 3.6',
-      url=doc_url,
-      download_url=git_url,
-      author='Youngju Jaden Kim',
-      author_email='pydemia@gmail.com',
-      license=license_str,
-      classifiers=[
-            # How Mature: 3 - Alpha, 4 - Beta, 5 - Production/Stable
-            'Development Status :: 4 - Beta',
-            'Environment :: Console',
-            #'Programming Language :: Python :: 3.5',
-            'Programming Language :: Python :: 3.6',
-            'Operating System :: OS Independent',
-            'Intended Audience :: End Users/Desktop',
-            'Intended Audience :: Developers',
-            'Intended Audience :: Science/Research',
-            'Natural Language :: English',
-            ],
-      packages=find_packages(exclude=['contrib',
-                                     #  'docs',
-                                      'tests']),
-      cmdclass={'documentation': SphinxCommand},
-      #setup_requires=required_packages,
-      install_requires=required_packages,
-      zip_safe=False,
-      package_data={package_name: ['*.gz', '_dataset/resources.tar.gz']}
-      )
+setup(
+    name=package_name,
+    version=package_version,
+    description='Useful tools for Data Scientists',
+    long_description=long_desc,
+    python_requires='>= 3.6',
+    url=doc_url,
+    download_url=git_url,
+    author='Youngju Jaden Kim',
+    author_email='pydemia@gmail.com',
+    license=license_str,
+    classifiers=[
+        # How Mature: 3 - Alpha, 4 - Beta, 5 - Production/Stable
+        'Development Status :: 4 - Beta',
+        'Environment :: Console',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Operating System :: OS Independent',
+        'Intended Audience :: End Users/Desktop',
+        'Intended Audience :: Developers',
+        'Intended Audience :: Science/Research',
+        'Natural Language :: English',
+    ],
+    packages=find_packages(
+        exclude=[
+            'contrib',
+            #  'docs',
+            'tests',
+        ],
+    ),
+    cmdclass={'documentation': SphinxCommand},
+    # setup_requires=required_packages,
+    install_requires=required_packages,
+    zip_safe=False,
+    package_data={package_name: ['*.gz', '_resources/resources.tar.gz']}
+)

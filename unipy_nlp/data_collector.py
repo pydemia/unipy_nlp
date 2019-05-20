@@ -32,7 +32,7 @@ import matplotlib.font_manager as fm
 
 import subprocess
 
-
+print(os.getcwd())
 font_dict = {
     path.split('/')[-1][:-4]: path
     for path in fm.get_fontconfig_fonts()
@@ -243,7 +243,6 @@ def refine_content(df) -> pd.DataFrame:
         [r'([0-9]{2,3}\-[0-9]{2,4}\-[0-9]{4})', r''],
         [r'\S+@][a-zA-Z0-9\._]+', r''],
         [r'\b(\D+\([^\(\)]+\)/\S+/\S+[:;]*)\b', r''],
-        [r'\b물류/서비스사업\b', r'물류서비스사업'],
         [r'/', r' '],
         [r'\s+', r' '],
         [r'[\^]{2,}', r'\^\^\n'],
@@ -269,7 +268,7 @@ def refine_content(df) -> pd.DataFrame:
                 list(pattern_tuple),
                 flags=re.IGNORECASE,
             )
-            
+
         return res
 
     for col in raw_col_list:
@@ -419,7 +418,7 @@ def collect_data(filepath, dump_json_ok=True, return_tuple=True):
             force_ascii=False,
             lines=True,
         )
-    
+
     if return_tuple:
         return res_df, dump_filename
     else:

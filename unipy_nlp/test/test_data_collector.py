@@ -1,15 +1,25 @@
 """Test Code Here.
 """
 
+<<<<<<< HEAD
 # %%
+
+import os
+
+if __name__ == '__main__':
+    os.chdir('../git/unipy_nlp')
+
+=======
+>>>>>>> parent of b54a8e7... move it to atom
+
 import os
 import re
 from glob import glob
 import importlib
 import pandas as pd
-import unipy_nlp.data_collector as udc
+import unipy_nlp.data_collector as udcl
 
-importlib.reload(udc)
+importlib.reload(udcl)
 
 # %% Variables
 
@@ -30,11 +40,16 @@ category_list = [
 
 # %% Data Loading: from Excel
 loaded_gen = (
+<<<<<<< HEAD
     (
         category,
+        udcl.read_xlsx_all_sheets(filepath)
+=======
+    (category,
         udc.read_xlsx_all_sheets(filepath)
+>>>>>>> parent of b54a8e7... move it to atom
         if 'usymphony' not in category
-        else udc.read_xlsx_usymp(filepath)
+        else udcl.read_xlsx_usymp(filepath)
     )
     for category, filepath in zip(category_list, filepath_list)
 )
@@ -42,7 +57,7 @@ loaded_gen = (
 # %% Data Refining 1:
 # Substitute Strings by cell, then Return it as dict
 refined_gen = (
-    (category, udc.refine_nested_excel_to_dict(excel_data))
+    (category, udcl.refine_nested_excel_to_dict(excel_data))
     for category, excel_data in loaded_gen
 )
 
@@ -76,7 +91,7 @@ _tmp_df = (
     .reset_index()
 )
 
-_tmp_df = udc.split_and_expand_str_rows(
+_tmp_df = udcl.split_and_expand_str_rows(
     _tmp_df,
     colname_str='contents',
     split_by=r'\n',
@@ -94,7 +109,7 @@ _tmp_df['contents'].apply(len).hist()
 
 # %% ALL IN ONE
 
-_tmp_df, _tmp_filename = udc.collect_data(
+_tmp_df, _tmp_filename = udcl.collect_data(
     './data',
     dump_json_ok=True,
     return_tuple=True,

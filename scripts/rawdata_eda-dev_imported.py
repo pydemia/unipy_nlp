@@ -7,7 +7,7 @@ except:
 	pass
 #%% [markdown]
 # # EDA & Preprocessing
-# 
+#
 # * Loading the data
 # * Formatting & Organizing
 # * Preprocessing
@@ -100,7 +100,7 @@ def read_xlsx_usymp(filename):
         # na_values='nan',
         # keep_default_na=True,
     ).replace('nan', np.NaN)
-    
+
     # tmp = full_df['Clientes']
     tmp.columns = [
         c.replace('Unnamed: ', 'un_')
@@ -108,7 +108,7 @@ def read_xlsx_usymp(filename):
         else c
         for c in tmp.columns
     ]
-    
+
     tmp['title_agg'] = tmp.iloc[:, :4].apply(
         lambda x: x.dropna().max(),
         axis=1,
@@ -117,7 +117,7 @@ def read_xlsx_usymp(filename):
         tmp.loc[:, tmp.columns[tmp.columns.str.contains('un_')][3:]]
         .apply(lambda x: x.dropna().max(), axis=1)
     )
-    
+
     tmp['title_yn'] = tmp['조회수'].notnull()
 
     tmp['title'] = tmp.loc[tmp['title_yn'] == True, ['title_agg']]
@@ -438,7 +438,7 @@ print(
 # ♬, <>, (), [], {}, *, \', \", ·, \.+, \!+, \?+, à, ->,
 # \D/\D
 # ```
-# 
+#
 # ```py
 # re.sub(r'[_·à♬\<\>\(\)\[\]\{\}\*\'\"\.\!\?\-\+], r'')
 # ```
@@ -467,6 +467,7 @@ def loop_substitutor(joined_str, pattern_list):
         return loop_substitutor(joined_str, pattern_list)
     else:
         return joined_str
+
 
 #%%
 ptn_a_s = re.compile(
@@ -563,7 +564,7 @@ import gensim
 # sudo apt-get install curl
 # bash <(curl -s https://raw.githubusercontent.com/konlpy/konlpy/master/scripts/mecab.sh)
 # ```
-# 
+#
 # ```sh
 # source activate <>
 # git clone https://bitbucket.org/eunjeon/mecab-python-0.996.git
@@ -578,62 +579,60 @@ udf_token = pd.DataFrame(
     [
         ['워라밸', 'T'],
         ['dt', 'F'],
-        ['d t', 'F'],
         ['d/t', 'F'],
-        ['digital transformation', 'F'],
+        ['dt총괄', 'T'],
+        ['dt 총괄', 'T'],
+        ['총괄', 'T'],
+        ['digital transformation', 'T'],
         ['deep change', 'F'],
+        ['deepchange', 'F'],
         ['happy hour', 'F'],
         ['해피 아워', 'F'],
         ['해피아워', 'F'],
         ['dt 총괄', 'T'],
-        ['comm', 'F'],
-        ['comm.', 'F'],
+        ['comm', 'T'],
+        ['comm.', 'T'],
         ['mbwa', 'F'],
         ['캔미팅', 'T'],
-        ['can meeting', 'F'],
-        ['fu', 'F'],
-        ['f u', 'F'],
-        ['f/u', 'F'],
+        ['can meeting', 'T'],
+        ['fu', 'T'],
+        ['f/u', 'T'],
         ['모니터링', 'T'],
         ['dw', 'F'],
-        ['d w', 'F'],
         ['d/w', 'F'],
         ['vwbe', 'F'],
         ['supex', 'F'],
         ['수펙스', 'F'],
-        ['tm', 'F'],
-        ['top', 'F'],
+        ['tm', 'T'],
+        ['top', 'T'],
         ['탑', 'T'],
         ['its', 'F'],
-        ['bottom up', 'F'],
-        ['top down', 'F'],
+        ['bottom up', 'T'],
+        ['top down', 'T'],
         ['의사결정', 'T'],
         ['의사 결정', 'T'],
-        ['self design', 'F'],
-        ['self-design', 'F'],
+        ['self design', 'T'],
+        ['self-design', 'T'],
         ['딜리버리', 'F'],
         ['delivery', 'F'],
         ['pt', 'F'],
         ['장표', 'F'],
         ['kpi', 'F'],
-        ['hr', 'F'],
-        ['h r', 'F'],
-        ['h/r', 'F'],
+        ['hr', 'T'],
+        ['h/r', 'T'],
         ['기업문화', 'F'],
         ['하이닉스', 'F'],
         ['이노베이션', 'T'],
         ['skt', 'F'],
-        ['bm', 'F'],
-        ['pm', 'F'],
+        ['bm', 'T'],
+        ['pm', 'T'],
         ['프로젝트', 'F'],
         ['pjt', 'F'],
-        ['rm', 'F'],
-        ['r m', 'F'],
-        ['r/m', 'F'],
+        ['rm', 'T'],
+        ['r/m', 'T'],
         ['culture', 'F'],
-        ['c/s', 'F'],
-        ['c s', 'F'],
         ['cs', 'F'],
+        ['c/s', 'F'],
         ['culture survey', 'F'],
         ['컬처 서베이', 'F'],
         ['컬쳐 서베이', 'F'],
@@ -662,16 +661,14 @@ udf_token = pd.DataFrame(
         ['sk 주식회사 c&c', 'F'],
         ['sk주식회사 cc', 'F'],
         ['sk주식회사cc', 'F'],
-        ['deepchange', 'F'],
-        ['deep change', 'F'],
-        ['self design', 'F'],
-        ['selfdesign', 'F'],
-        ['self-design', 'F'],
+        ['self design', 'T'],
+        ['selfdesign', 'T'],
+        ['self-design', 'T'],
         ['경영협의회', 'F'],
         ['경영 협의회', 'F'],
         ['사업대표', 'F'],
         ['현장경영', 'T'],
-        ['gtm', 'F'],
+        ['gtm', 'T'],
         ['vdi', 'F'],
         ['cloud-z', 'F'],
         ['cloudz', 'F'],
@@ -684,8 +681,8 @@ udf_token = pd.DataFrame(
         ['사내시스템', 'T'],
         ['단기 성과', 'F'],
         ['단기성과', 'F'],
-        ['watson', 'F'],
-        ['왓슨', 'F'],
+        ['watson', 'T'],
+        ['왓슨', 'T'],
         ['유심포니', 'F'],
         ['선거운동', 'T'],
         ['연봉체계', 'F'],
@@ -712,8 +709,8 @@ udf_token = pd.DataFrame(
         ['금융사업', 'T'],
         ['its사업', 'T'],
         ['its 사업', 'T'],
-        ['dt총괄', 'T'],
-        ['dt 총괄', 'T'],
+        ['물류서비스사업', 'T'],
+        ['물류/서비스사업', 'T'],
         ['업무체계', 'F'],
         ['업무 체계', 'F'],
     ],
@@ -747,10 +744,10 @@ udf_token_mecab = udf_token.loc[:, udf_token.columns.str.isnumeric()]
 
 #%%
 """
-표층형 (표현형태)	0	0	0	품사 태그	의미 부류	종성 유무	읽기	타입	첫번째 품사	마지막 품사	 	 
-서울	          0	0	0	  NNG	지명	T	서울	*	*	*	*	 
+표층형 (표현형태)	0	0	0	품사 태그	의미 부류	종성 유무	읽기	타입	첫번째 품사	마지막 품사
+서울	          0	0	0	  NNG	지명	T	서울	*	*	*	*
 불태워졌	     0	0	0	 VV+EM+VX+EP	*	T	불태워졌	inflected	VV	EP	*	불태우/VV/+어/EC/+지/VX/+었/EP/
-해수욕장      	0	0	0	 NNG	 	T	해수욕장	Compound	*	*	해수/NNG/+욕/NNG/+장/NNG/*	 
+해수욕장      	0	0	0	 NNG	 	T	해수욕장	Compound	*	*	해수/NNG/+욕/NNG/+장/NNG/*
 """
 
 
@@ -816,7 +813,7 @@ morphed = [
 #%%
 def get_wanted_morphs(s, wanted_tags):
     res_pos = tagger.pos(s)
-    
+
     res = list(
         filter(
             lambda x: (x[1] in wanted_tags) and (len(x[0]) > 1),
@@ -957,7 +954,7 @@ save_list = [
     ('spmed_unspaced', spmed_unspaced),
 ]
 
-for savename, obj in save_list:    
+for savename, obj in save_list:
     with open(f'data/{savename}.json', 'w', encoding='utf-8') as jfile:
         # converted_json = json.dumps(obj)
         converted_json = obj
@@ -995,8 +992,8 @@ bow_doc_tmp = bow_corpus_raw[10]
 for i in range(len(bow_doc_tmp)):
     print(
         "Word {} (\"{}\") appears {} time.".format(
-            bow_doc_tmp[i][0], 
-            cdict[bow_doc_tmp[i][0]], 
+            bow_doc_tmp[i][0],
+            cdict[bow_doc_tmp[i][0]],
             bow_doc_tmp[i][1]
         )
     )
@@ -1164,7 +1161,7 @@ def compute_coherence_values(
                 minimum_phi_value=.01,
                 random_state=1,
             )
-            coherence_model = gensim.models.CoherenceModel(
+            coherence_model = CoherenceModel(
                 model=model,
                 texts=texts,
                 dictionary=id2word,
@@ -1246,7 +1243,7 @@ def pick_best_n_topics(dictionary, corpus, texts, lda_typ='default'):
         corpus=corpus,
         id2word=dictionary,
         texts=texts,
-        num_topic_list=[5, 7, 10, 12, 15, 17, 20], 
+        num_topic_list=[5, 7, 10, 12, 15, 17, 20],
         lda_typ=lda_typ,
         #  start=2, limit=40, step=6,
     )
@@ -1290,7 +1287,7 @@ if not MODEL_SAVED_OK:
         # LDA_TOPIC_NUM = _model.num_topics
         LDA_TOPIC_NUM = _topic_num
         LDA_MODEL_NAME = f'lda_{LDA_TOPIC_NUM}_topics_model.ldamodel'
-        
+
         print(f'{LDA_TOPIC_NUM:2}: {LDA_MODEL_NAME}')
 
         _filename = f'data/{LDA_MODEL_NAME}'
@@ -1310,7 +1307,7 @@ else:
         _filename = f'data/{LDA_MODEL_NAME}'
 
         _model = gensim.models.LdaMulticore.load(_filename)
-        
+
         model_dict.setdefault(_topic_num, _model)
         model_list += [_model]
 
@@ -1360,17 +1357,13 @@ pyLDAvis.display(prepared_data, local=False)
 #%% [markdown]
 # $$ distinctiveness(w) = \sum P(t \vert w) log\frac{P(t \vert w)}{P(w)} $$
 # $$ saliency(w) = P(w) \times distinctiveness(w) $$
-# 
+#
 # <div align="right">(Chuang, J., 2012. Termite: Visualization techniques for assessing textual topic models)</div>
 
 #%%
 def get_saliency(tinfo_df):
     """Calculate Saliency for terms within a topic.
-
-    $$ distinctiveness(w) = \sum P(t \vert w) log\frac{P(t \vert w)}{P(w)} $$
-    $$ saliency(w) = P(w) \times distinctiveness(w) $$
-    <div align="right">(Chuang, J., 2012. Termite: Visualization techniques for assessing textual topic models)</div>
-
+    
     Parameters
     ----------
     tinfo: pandas.DataFrame
@@ -1385,25 +1378,21 @@ def get_saliency(tinfo_df):
 
 #%% [markdown]
 # $$ relevance(t,w) = \lambda \cdot P(w \vert t) + (1 - \lambda) \cdot \frac{P(w \vert t)}{P(w)} $$
-# 
+#
 # <div align="center"> Recommended $\lambda = 0.6$ </div>
-# 
+#
 # <div align="right">(Sievert, C., 2014. LDAvis: A method for visualizing and interpreting topics)</div>
 
 #%%
 def get_relevance(tinfo_df, l=.6):
     """Calculate Relevances with a given lambda value.
-
-    # $$ relevance(t,w) = \lambda \cdot P(w \vert t) + (1 - \lambda) \cdot \frac{P(w \vert t)}{P(w)} $$
-    <div align="center"> Recommended $\lambda = 0.6$ </div>
-    <div align="right">(Sievert, C., 2014. LDAvis: A method for visualizing and interpreting topics)</div>
-
+    
     Parameters
     ----------
     tinfo: pandas.DataFrame
         `pyLDAvis.gensim.prepare`.to_dict()['tinfo'] containing
         ['Category', 'Freq', 'Term', 'Total', 'loglift', 'logprob']
-    
+
     l: float
         lambda_ratio between {0-1}. default is .6 (recommended from its paper)
 
@@ -1472,7 +1461,7 @@ def get_terminfo_table(
         )
         tinfo_df['saliency'] = get_saliency(tinfo_df)
         tinfo_df['relevance'] = get_relevance(tinfo_df)
-        
+
         tinfo_df['term_prob'] = np.exp(tinfo_df['logprob'])
         tinfo_df['term_r_prob'] = np.exp(tinfo_df['relevance'])
         tinfo_df['term_r_adj_prob'] = (
@@ -1481,7 +1470,7 @@ def get_terminfo_table(
             ['term_r_prob']
             .apply(lambda x: x / x.sum())
         )
-        
+
         if r_normalized:
             r_colname = 'term_r_adj_prob'
         else:
@@ -1541,10 +1530,10 @@ def get_terminfo_table(
             bow_chunk_arr = np.array(bow_chunk)
             word_id_arr = bow_chunk_arr[:, 0]
             word_cnt_arr = bow_chunk_arr[:, 1]
-            
+
             # normed_word_cnt_arr = (word_cnt_arr / word_cnt_arr.sum()) * 10
             clipped_word_cnt_arr = np.clip(word_cnt_arr, 0, 3)
-            
+
             score_series = (score_df.loc[ixs[:, word_id_arr], :]
                 .groupby(level=0)
                 [colname]
@@ -1578,7 +1567,7 @@ def get_terminfo_table(
             .rank(method='max', ascending=False)
             .astype(int)
         )
-    
+
     else:
 
         vis_attr_dict = gensimvis._extract_data(
@@ -1989,7 +1978,7 @@ topic_weights = []
 for i, row_list in enumerate(lda_model.id2word):
     topic_weights.append([w for i, w in row_list[0]])
 
-# Array of topic weights    
+# Array of topic weights
 arr = pd.DataFrame(topic_weights).fillna(0).values
 
 # Keep the well separated points (optional)
@@ -2006,14 +1995,14 @@ tsne_lda = tsne_model.fit_transform(arr)
 output_notebook()
 n_topics = 4
 mycolors = np.array([color for name, color in mcolors.TABLEAU_COLORS.items()])
-plot = figure(title="t-SNE Clustering of {} LDA Topics".format(n_topics), 
+plot = figure(title="t-SNE Clustering of {} LDA Topics".format(n_topics),
               plot_width=900, plot_height=700)
 plot.scatter(x=tsne_lda[:,0], y=tsne_lda[:,1], color=mycolors[topic_num])
 show(plot)#%% [markdown]
 # ## Hierarchical LDA
 #%% [markdown]
 # H
-# 
+#
 # Blei, D. M., Griffiths, T. L., & Jordan, M. I. (2010). The nested chinese restaurant process and bayesian nonparametric inference of topic hierarchies. Journal of the ACM (JACM), 57(2), 7.
 
 #%%
@@ -2081,24 +2070,24 @@ colour_map = {
 }
 
 def show_doc(d=0):
-    
+
     node = hlda_model.document_leaves[d]
     path = []
     while node is not None:
         path.append(node)
         node = node.parent
-    path.reverse()   
-    
+    path.reverse()
+
     n_words = 10
-    with_weights = False    
+    with_weights = False
     for n in range(len(path)):
         node = path[n]
-        colour = colour_map[n] 
+        colour = colour_map[n]
         msg = 'Level %d Topic %d: ' % (node.level, node.node_id)
         msg += node.get_top_words(n_words, with_weights)
         output = '<h%d><span style="color:%s">%s</span></h3>' % (n+1, colour, msg)
         display(HTML(output))
-        
+
     display(HTML('<hr/><h5>Processed Document</h5>'))
 
     doc = bow_corpus_ids[d]
@@ -2122,7 +2111,7 @@ import gzip
 def save_zipped_pickle(obj, filename, protocol=-1):
     with gzip.open(filename, 'wb') as f:
         pickle.dump(obj, f, protocol)
-        
+
 def load_zipped_pickle(filename):
     with gzip.open(filename, 'rb') as f:
         loaded_object = pickle.load(f)
@@ -2349,21 +2338,21 @@ def sentences_chart(lda_model=lda_model, corpus=bow_corpus, start = 0, end = 13)
     corp = bow_corpus[start:end]
     mycolors = [color for name, color in mcolors.TABLEAU_COLORS.items()]
 
-    fig, axes = plt.subplots(end-start, 1, figsize=(20, (end-start)*0.95), dpi=160)       
+    fig, axes = plt.subplots(end-start, 1, figsize=(20, (end-start)*0.95), dpi=160)
     axes[0].axis('off')
     for i, ax in enumerate(axes):
         if i > 0:
-            corp_cur = corp[i-1] 
+            corp_cur = corp[i-1]
             # topic_percs, wordid_topics, wordid_phivalues = lda_model[corp_cur]
             print(lda_model[corp_cur])
             topic_percs, wordid_topics = lda_model[corp_cur]
-            word_dominanttopic = [(lda_model.id2word[wd], topic[0]) for wd, topic in wordid_topics]    
+            word_dominanttopic = [(lda_model.id2word[wd], topic[0]) for wd, topic in wordid_topics]
             ax.text(0.001, 0.5, "Doc " + str(i-1) + ": ", verticalalignment='center',
                     fontsize=16, color='black', transform=ax.transAxes, fontweight=1000)
 
             # Draw Rectange
             topic_percs_sorted = sorted(topic_percs, key=lambda x: (x[1]), reverse=True)
-            ax.add_patch(Rectangle((0.0, 0.01), 0.99, 0.90, fill=None, alpha=1, 
+            ax.add_patch(Rectangle((0.0, 0.01), 0.99, 0.90, fill=None, alpha=1,
                                    color=mycolors[topic_percs_sorted[0][0]], linewidth=2))
 
             word_pos = 0.06
@@ -2380,17 +2369,16 @@ def sentences_chart(lda_model=lda_model, corpus=bow_corpus, start = 0, end = 13)
                     horizontalalignment='left',
                     verticalalignment='center',
                     fontsize=16, color='black',
-                    transform=ax.transAxes)       
+                    transform=ax.transAxes)
 
     plt.subplots_adjust(wspace=0, hspace=0)
     plt.suptitle('Sentence Topic Coloring for Documents: ' + str(start) + ' to ' + str(end-2), fontsize=22, y=0.95, fontweight=700)
     plt.tight_layout()
     plt.show()
-    
+
     # return fig
 
 sentences_chart()
 
 #%% [markdown]
 # Done.
-

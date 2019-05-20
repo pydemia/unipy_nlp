@@ -12,6 +12,8 @@ unidecode == 1.0.23
 gensim == 3.7.2
 spellchecker == 0.4
 konlpy == 0.5.1
+tensorflow == 1.13.1
+tensorboard == 1.13.1
 sentencepiece == 0.1.4
 networkx == 2.1
 pyvis == 0.1.6.0
