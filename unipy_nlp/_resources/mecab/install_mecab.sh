@@ -53,6 +53,9 @@ make install
 ./configure --prefix="$HOME/.mecab/dic"
 make
 make install
+
+./tools/add-userdic.sh
+
 #
 #
 # vi mecab_home/etc/mecabrc
