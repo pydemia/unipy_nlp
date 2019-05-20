@@ -28,7 +28,10 @@ attrs = ['tags',        # 품사 태그
          'indexed']     # 인덱스 표현
 
 module_installed_path = os.path.dirname(os.path.realpath(__file__))
-
+dic_installed_path = os.path.join(
+    module_installed_path,
+    '_resources/mecab/mecab-dic/mecab-ko-dic',
+)
 
 def read_json(filename, encoding='utf-8'):
     """JSON file reader."""
@@ -81,7 +84,7 @@ class Mecab():
     """
     def __init__(
             self,
-            dicpath='_resources/mecab/mecab-dic/mecab-ko-dic',
+            dicpath=dic_installed_path,
             ):
 
         try:
