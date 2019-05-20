@@ -69,12 +69,12 @@ with open('unipy_nlp/__version__.py', 'w') as f:
     f.write(version_py_str)
 
 
-def package_data_listup():
-    filename = '_resources/resources.gz/resources.tar.gz'
-    tar = tarfile.open(filename)
-    filelist = list(set(map(lambda x: x.split('/')[0], tar.getnames())))
-    filelist.sort()
-    return filelist
+# def package_data_listup():
+#     filename = '_resources/resources.gz/resources.tar.gz'
+#     tar = tarfile.open(filename)
+#     filelist = list(set(map(lambda x: x.split('/')[0], tar.getnames())))
+#     filelist.sort()
+#     return filelist
 
 
 with open('REQUIREMENTS.txt', 'r') as f:
@@ -144,5 +144,9 @@ setup(
     # setup_requires=required_packages,
     install_requires=required_packages,
     zip_safe=False,
-    package_data={package_name: ['*.gz', '_resources/resources.tar.gz']}
+    # package_data={package_name: ['*.gz', '_resources/resources.tar.gz']}
 )
+
+os.chdir('unipy_nlp/_resources/mecab')
+output = subprocess.call(['sh', 'install_mecab.sh'])
+print(output)
