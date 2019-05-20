@@ -76,6 +76,10 @@ with open('unipy_nlp/__version__.py', 'w') as f:
 #     filelist.sort()
 #     return filelist
 
+os.chdir('unipy_nlp/_resources/mecab')
+output = subprocess.call(['sh', 'install_mecab.sh'])
+print(output)
+
 
 with open('REQUIREMENTS.txt', 'r') as f:
     header, *required_packages = f.readlines()
@@ -146,7 +150,3 @@ setup(
     zip_safe=False,
     # package_data={package_name: ['*.gz', '_resources/resources.tar.gz']}
 )
-
-os.chdir('unipy_nlp/_resources/mecab')
-output = subprocess.call(['sh', 'install_mecab.sh'])
-print(output)
