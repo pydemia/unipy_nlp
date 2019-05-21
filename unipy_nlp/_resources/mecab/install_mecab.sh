@@ -5,7 +5,7 @@ python3 create_user_dic.py
 MECAB_FILE="mecab-0.996-ko-0.9.2.tar.gz"
 MEACB_LINK="mecab"
 
-if [ -f "$MECAB_FILE"]  || [ -L "$MEACB_LINK" ]; then
+if [ -f "$MECAB_FILE"]  && [ -L "$MEACB_LINK" ]; then
    echo "The file '$MEACB_LINK' exists."
 else
    echo "The file '$MEACB_LINK' in not found."
@@ -18,6 +18,7 @@ cd $MEACB_LINK
 
 ./configure --prefix="$HOME/.mecab"
 make
+make check
 make install
 
 cd ..
@@ -26,7 +27,7 @@ cd ..
 MECAB_DICT_FILE="mecab-ko-dic-2.1.1-20180720.tar.gz"
 MEACB_DICT_LINK="mecab-ko-dic"
 
-if [ -f "$MECAB_DICT_FILE"]  || [ -L "$MEACB_DICT_LINK" ]; then
+if [ -f "$MECAB_DICT_FILE"]  && [ -L "$MEACB_DICT_LINK" ]; then
    echo "The file '$MEACB_DICT_LINK' exists."
 else
    echo "The file '$MEACB_DICT_LINK' in not found."
@@ -42,6 +43,7 @@ cd $MEACB_DICT_LINK
  --with-dicdir="$HOME/.mecab/dic" \
  --libexecdir="$HOME/.mecab/libexec/mecab"
 make
+make check
 make install
 
 # echo To enable dictionary, rewrite /home/jovyan/mecab/etc/mecabrc as \"dicdir = /home/jovyan/mecab/dic\"
@@ -52,6 +54,7 @@ make install
 ./autogen.sh
 ./configure --prefix="$HOME/.mecab/dic"
 make
+make check
 make install
 
 ./tools/add-userdic.sh

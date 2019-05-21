@@ -79,6 +79,7 @@ with open('unipy_nlp/__version__.py', 'w') as f:
 os.chdir('unipy_nlp/_resources/mecab')
 output = subprocess.call(['sh', 'install_mecab.sh'])
 print(output)
+os.chdir('../../../')
 
 
 with open('REQUIREMENTS.txt', 'r') as f:
