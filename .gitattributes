@@ -1,3 +1,6 @@
 *.tar.gz filter=lfs diff=lfs merge=lfs -text
 *.def filter=lfs diff=lfs merge=lfs -text
+<<<<<<< HEAD
 *sys.dic filter=lfs diff=lfs merge=lfs -text
+=======
+>>>>>>> ca389d4d5a871a865dfd95ce3989e972b2bf813d
