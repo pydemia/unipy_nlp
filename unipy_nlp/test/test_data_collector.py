@@ -1,7 +1,7 @@
 """Test Code Here.
 """
 
-<<<<<<< HEAD
+
 # %%
 
 import os
@@ -9,8 +9,6 @@ import os
 if __name__ == '__main__':
     os.chdir('../git/unipy_nlp')
 
-=======
->>>>>>> parent of b54a8e7... move it to atom
 
 import os
 import re
