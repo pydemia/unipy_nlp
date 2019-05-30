@@ -30,7 +30,7 @@ attrs = ['tags',        # 품사 태그
 module_installed_path = os.path.dirname(os.path.realpath(__file__))
 dic_installed_path = os.path.join(
     module_installed_path,
-    '_resources/mecab/mecab-dic/mecab-ko-dic',
+    '_resources/mecab/mecab/lib/mecab/dic/mecab-ko-dic',
 )
 
 def read_json(filename, encoding='utf-8'):

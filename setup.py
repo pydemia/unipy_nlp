@@ -8,16 +8,23 @@ Modified on Tue May 14 15:41:19 2019
 
 
 import os
+import sys
+import site
 import datetime as dt
 import tarfile
 import distutils
 import subprocess
+from glob import glob
+from pathlib import Path
 
 try:
     from setuptools import setup, find_packages
+    from setuptools.command.install import install
 except ImportError:
     from distutils.core import setup, find_packages
+    from setuptools.command.install import install
 from distutils.cmd import Command
+
 
 
 # Package Description
@@ -32,6 +39,11 @@ package_source = '{name}-{version}.tar.gz'.format(
 license_family_str = 'MIT'
 license_str = 'MIT License'
 modified_time = dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+resource_dir = os.path.join(
+    os.path.abspath(os.path.dirname(__file__)),
+    package_name,
+    '_resources',
+)
 
 git_url = 'https://github.com/pydemia/{package_name}'.format(
     package_name=package_name
@@ -68,18 +80,60 @@ with open('unipy_nlp/__version__.py', 'w') as f:
     )
     f.write(version_py_str)
 
+with open('unipy_nlp/__UNIPY_NLP_SETUP__.py', 'w') as f:
+    f.write("__SETUP_OK__ = False")
 
-# def package_data_listup():
-#     filename = '_resources/resources.gz/resources.tar.gz'
-#     tar = tarfile.open(filename)
-#     filelist = list(set(map(lambda x: x.split('/')[0], tar.getnames())))
-#     filelist.sort()
-#     return filelist
+def make_resource_targz(source_dir, output_filename):
+    print("create %s..." % output_filename)
+    with tarfile.open(output_filename, "w:gz") as tar:
+        tar.add(source_dir, arcname=os.path.basename(source_dir))
 
-os.chdir('unipy_nlp/_resources/mecab')
-output = subprocess.call(['sh', 'install_mecab.sh'])
-print(output)
 
+def build_mecab():
+    cwd = os.path.abspath(os.path.dirname(__file__))
+    # p = subprocess.call(
+    #     [
+    #         sys.executable,
+    #         os.path.jon(cwd, )
+    #     ]
+    # )
+    mecab_dir = os.path.join(
+        resource_dir,
+        'mecab',
+    )
+    output = subprocess.call(['sh', os.path.join(mecab_dir, 'build_mecab.sh')])
+    print(output)
+
+build_mecab()
+
+
+resource_tarname = '_resources.tar.gz'
+make_resource_targz(
+    resource_dir,
+    os.path.join(
+        package_name,
+        resource_tarname,
+    )
+)
+
+
+# resource_file_abspath_list = glob(
+#     os.path.join(
+#         resource_dir,
+#         '**',
+#     ),
+#     recursive=True,
+# )[1:]
+# resource_file_relpath_list = [
+#     os.path.relpath(filepath, resource_dir)
+#     for filepath in resource_file_abspath_list
+# ]
+# resource_file_relpath_only_files_list = list(
+#     filter(
+#         os.path.isfile,
+#         (item for item in resource_file_relpath_list),
+#     )
+# )
 
 with open('REQUIREMENTS.txt', 'r') as f:
     header, *required_packages = f.readlines()
@@ -114,6 +168,26 @@ class SphinxCommand(Command):
         subprocess.check_call(command)
 
 
+# class PostInstallCommand(install):
+#     """Post-installation for installation mode."""
+
+#     def run(self):
+#         installed_dir = os.path.join(
+#             site.getsitepackages()[0],
+#             package_name,
+#         )
+#         working_dir = subprocess.check_output(["pwd", "-P"]).decode('utf-8').split("\n")[0]
+#         subprocess.check_call(
+#             ";".join(
+#                 [
+#                     "cd %s" % installed_dir,
+#                     "tar -zxf %s" % resource_tarname,
+#                     "cd %s" % working_dir,
+#                 ]
+#             )
+#         )
+#         install.run(self)
+
 setup(
     name=package_name,
     version=package_version,
@@ -144,9 +218,18 @@ setup(
             'tests',
         ],
     ),
-    cmdclass={'documentation': SphinxCommand},
+    cmdclass={
+        'documentation': SphinxCommand,
+        #'install': PostInstallCommand,
+    },
     # setup_requires=required_packages,
     install_requires=required_packages,
     zip_safe=False,
-    # package_data={package_name: ['*.gz', '_resources/resources.tar.gz']}
+    # package_data={package_name: ['*.gz', '_resources/resources.tar.gz']},
+    package_data={package_name: ['*.gz', '_resources.tar.gz']},
+    # data_files=[
+    #     # (directory, files)
+    #     ('_resources', resource_file_relpath_only_files_list),
+    #     # ('config', ['cfg/data.cfg']),
+    # ],
 )
