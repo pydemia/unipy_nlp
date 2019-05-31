@@ -30,7 +30,7 @@ from distutils.cmd import Command
 # Package Description
 
 package_name = 'unipy_nlp'
-package_version = '0.0.1'
+package_version = '0.3.1'
 short_desc = 'NLP Tools for Data Scientist.'
 package_source = '{name}-{version}.tar.gz'.format(
     name=package_name,
@@ -82,6 +82,7 @@ with open('unipy_nlp/__version__.py', 'w') as f:
 
 with open('unipy_nlp/__UNIPY_NLP_SETUP__.py', 'w') as f:
     f.write("__SETUP_OK__ = False")
+
 
 def make_resource_targz(source_dir, output_filename):
     print("create %s..." % output_filename)

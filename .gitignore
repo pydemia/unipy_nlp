@@ -1,5 +1,6 @@
 # User-Defined files
 data/**
+unipy_nlp/_resources/mecab/create_user_dic.py
 
 =======
 >>>>>>> 7743aa0ab3d92216feb517da609e956c72c6e2a1

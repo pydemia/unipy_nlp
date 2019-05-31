@@ -35,6 +35,11 @@ import matplotlib.pyplot as plt
 import matplotlib.font_manager as fm
 
 
+__all__ = []
+__all__ += [
+    'Word2Vec',
+]
+
 class Word2Vec(object):
 
     def __init__(

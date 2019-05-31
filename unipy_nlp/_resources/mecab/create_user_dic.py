@@ -153,7 +153,7 @@ udf_token = pd.DataFrame(
 udf_token['0'] = udf_token['word']
 udf_token['1'] = 0
 udf_token['2'] = 0
-udf_token['3'] = 0
+udf_token['3'] = 10
 udf_token['4'] = 'NNG'
 udf_token['5'] = '*'
 udf_token['6'] = udf_token['last_yn']
@@ -162,16 +162,17 @@ udf_token['8'] = '*'
 udf_token['9'] = '*'
 udf_token['10'] = '*'
 udf_token['11'] = '*'
-udf_token['11'] = '*'
+udf_token['12'] = '*'
 
 udf_token_mecab = udf_token.loc[:, udf_token.columns.str.isnumeric()]
 
 
 # """
-# 표층형 (표현형태)	0	0	0	품사 태그	의미 부류	종성 유무	읽기	타입	첫번째 품사	마지막 품사
-# 서울	          0	0	0	  NNG	지명	T	서울	*	*	*	*
-# 불태워졌	     0	0	0	 VV+EM+VX+EP	*	T	불태워졌	inflected	VV	EP	*	불태우/VV/+어/EC/+지/VX/+었/EP/
-# 해수욕장      	0	0	0	 NNG	 	T	해수욕장	Compound	*	*	해수/NNG/+욕/NNG/+장/NNG/*
+#      0        1   2    3          4         5        6        7        8        9           10       11      12
+# 표층형 (표현형태)	좌문맥ID  우문맥ID  출현비용     품사태그    의미부류   종성 유무    읽기      타입    첫번째품사	마지막 품사
+# 서울              0      0        0         NNG       지명       T      서울       *        *           *         *       *
+# 불태워졌	         0      0        0    VV+EM+VX+EP     *        T    불태워졌   inflected   VV          EP        *    불태우/VV/+어/EC/+지/VX/+었/EP/
+# 해수욕장           0      0        0         NNG        *        T    해수욕장   Compound    *           *         *   해수/NNG/+욕/NNG/+장/NNG/*
 # """
 
 

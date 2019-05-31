@@ -103,7 +103,7 @@ len(sentence_list)
 
 # %%
 SPM_MODEL_NAME = 'spm_trained'
-spm_model = uprc.train_spm(
+uprc.train_spm(
     sentence_list,
     source_type='list',  # {'list', 'txt'}
     model_type='bpe',
@@ -141,6 +141,7 @@ spmed_unspaced = [
 prep = uprc.Preprocessor()
 prep.read_json('./data/_tmp_dump/rawdata_cpred_flatted.json')
 sentence_list = prep.source_sentences
+
 
 prep.train_spm(
     source_type='list',  # {'list', 'txt'}

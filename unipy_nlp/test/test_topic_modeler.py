@@ -2,12 +2,6 @@
 """
 
 # %%
-import os
-
-if __name__ == '__main__':
-    os.chdir('../git/unipy_nlp')
-
-# %%
 
 import os
 import re
@@ -33,7 +27,21 @@ importlib.reload(utpm)
 prep = uprc.Preprocessor()
 prep.read_json('./data/_tmp_dump/rawdata_cpred_flatted.json')
 sentence_list = prep.source_sentences
-#
+
+# %%
+
+morphed_filtered = prep.pos_tag(
+    tag_type=[
+        '체언 접두사', '명사', '한자', '외국어',
+        '수사', '구분자',
+        '동사',
+        '부정 지정사', '긍정 지정사',
+    ]
+)
+print(len(morphed_filtered))
+
+# %%
+
 # prep.train_spm(
 #     source_type='list',  # {'list', 'txt'}
 #     model_type='bpe',
@@ -57,25 +65,31 @@ print(len(spmed_unspaced))
 
 # %%
 # {nouned, morphed, morphed_filtered, spmed, spmed_unspaced}
+
+# tokenized = [
+#     list(filter(lambda w: len(w) > 1, s))
+#     for s in spmed_unspaced
+# ]
 tokenized = [
     list(filter(lambda w: len(w) > 1, s))
-    for s in spmed_unspaced
+    for s in morphed_filtered
 ]
+
 
 # %%
 
 tpm = utpm.TopicModeler(sentence_list, tokenized)
-# tpm.train_lda(
-#     num_topic=5,
-#     workers_n=8,
-#     random_seed=1,
-# )
-# tpm.pick_best_lda_topics(
-#     num_topic_list=[5, 7, 10, 12, 15],
-#     workers_n=8,
-#     random_seed=1,
-# )
-# tpm.save_lda(savepath='data/_tmp_dump', affix='lda')
+tpm.train_lda(
+    num_topic=5,
+    workers_n=8,
+    random_seed=1,
+)
+tpm.pick_best_lda_topics(
+    num_topic_list=[5, 7, 10],
+    workers_n=8,
+    random_seed=1,
+)
+tpm.save_lda(savepath='data/_tmp_dump', affix='lda')
 tpm.load_lda('data/_tmp_dump')
 tpm.visualize_lda_to_html(
     7,
@@ -105,3 +119,6 @@ tpm.get_representitive_documents(
     savepath='data/_tmp_dump',
     filename_affix='lda',
 )
+
+
+#%%

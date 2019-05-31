@@ -1,11 +1,6 @@
 """Test Code Here.
 """
 
-# %%
-import os
-
-if __name__ == '__main__':
-    os.chdir('../git/unipy_nlp')
 
 # %%
 
@@ -150,35 +145,11 @@ pyLDAvis.save_json(prepared_data, LDA_JSON)
 
 # %%
 # pyLDAvis.display(prepared_data, local=False)
-print('a')
-
-# %%
-#%% [markdown]
-# $$ distinctiveness(w) = \sum P(t \vert w) log\frac{P(t \vert w)}{P(w)} $$
-# $$ saliency(w) = P(w) \times distinctiveness(w) $$
-#
-# <div align="right">(Chuang, J., 2012. Termite: Visualization techniques for assessing textual topic models)</div>
+print("Test: 'pyLDAvis' finished.")
 
 # %%
 
 
-subprocess
-pkg_list = ['g++', 'openjdk-7-jdk', 'python-dev', 'python3-dev']
-#%%
-os.getcwd()
-# %%
-pkg_list = ['g++', 'openjdk-7-jdk', 'python-dev', 'python3-dev']
-os.system(
-    ';'.join([
-        'cd ./unipy_nlp/_resources/pkgs',
-        *[f'apt-get download {pkg}' for pkg in pkg_list],
-        'cd ../../../',
-    ])
-)
-# os.system('cd ./unipy_nlp/_resources/pkgs')
-
-
-# %%
-subprocess
+print("Test: 'pyLDAvis' finished.")
 
 #%%

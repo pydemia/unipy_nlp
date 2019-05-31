@@ -23,8 +23,10 @@ from glob import glob
 from pprint import pprint
 import numpy as np
 import pandas as pd
+from collections.abc import Iterable
 
-from konlpy.tag import Mecab
+# from konlpy.tag import Mecab
+from .tagger import Mecab
 import gensim
 import sentencepiece as spm
 
@@ -36,6 +38,14 @@ import matplotlib.pyplot as plt
 import matplotlib.font_manager as fm
 
 
+__all__ = []
+__all__ += [
+    # 'get_data_from_es',
+    'Preprocessor',
+    # 'get_wanted_morphs',
+]
+
+
 font_dict = {
     path.split('/')[-1][:-4]: path
     for path in fm.get_fontconfig_fonts()
@@ -45,73 +55,6 @@ font_dict = {
 for _font_nm, _font_file in font_dict.items():
     subprocess.call(['cp', _font_file, './unipy_nlp/_resources/fonts/'])
 
-
-# %%
-
-# root_path = os.getcwd()
-# hunspell_path = './data/_hunspell'
-# if not os.path.isdir(hunspell_path):
-#     os.makedirs(hunspell_path, exist_ok=False)
-#     print(f"'Spell-Dict will be saved in {hunspell_path}")
-#     subprocess.call(
-#         [
-#             'git',
-#             'clone',
-#             'https://github.com/changwoo/hunspell-dict-ko.git',
-#             f'{hunspell_path}'
-#         ]
-#     )
-# os.chdir(hunspell_path)
-# subprocess.Popen(
-#     'make;',
-#     shell=True,
-#     stderr=subprocess.STDOUT,
-# )
-# os.chdir(root_path)
-#
-# hunspell_path = './unipy_nlp/_resources/hunspell'
-# spell_checker = HunSpell(
-#     f'{hunspell_path}/ko.dic',
-#     f'{hunspell_path}/ko.aff',
-# )
-# spell_checker.add('수펙스')  # User-Defined Dictionary
-#
-#
-# #%%
-#
-# def spell_corrector(sentence_str):
-#     splitted = sentence_str.split(r' ')
-#
-#     if len(splitted) > 0:
-#         return ' '.join(
-#             [
-#                 spell_checker.suggest(word)[0]
-#                 if not spell_checker.spell(word)
-#                 else word
-#                 for word in splitted
-#             ]
-#         )
-#     else:
-#         return sentence_str
-
-
-# command_train = ' '.join(
-#     [
-#         # 'spm_train',
-#         f'--input={new_file}',
-#         f'--model_prefix={SPM_MODEL_NAME}',
-#         '' if SPM_MODEL_TYPE == 'word' else f'--vocab_size={SPM_VOCAB_SIZE}',
-#         f'--character_coverage=0.9995',
-#         # '--seed_sentencepiece_size=10000',
-#         # f'--pieces_size={SPM_VOCAB_SIZE}',
-#         f'--model_type={SPM_MODEL_TYPE}',
-#         f'--input_sentence_size={len(sentenced)}',
-#         # f'--max_sentencepiece_length={max(map(len, sentenced))}',
-#         f'--max_sentencepiece_length={512}',
-#     ],
-# )
-
-# %%
 
 def get_data_from_es(
         es_conn_object,
@@ -154,6 +97,7 @@ def get_wanted_morphs(s, wanted_tags):
         return [morph[0] for morph in res]
 
 # %%
+
 
 def raw_in_count(filename):
     with open(filename, 'rb') as file:
@@ -287,19 +231,35 @@ class Preprocessor(object):
             ):
         self.SPM_MODEL_NAME = None
         self.source_sentences = None
+        self.tagger = Mecab()
+
+    def drop_by_minimum_length(self, sentence_list, min=2):
+        return list(filter(lambda s: len(s) > min, sentence_list))
 
     def read_json(
             self,
             filename,
+            drop_min = 2,
             ):
 
-        self.data = pd.read_json(
+        self.data=pd.read_json(
             filename,
-            orient='records',
-            encoding='utf-8',
-            lines=True,
+            orient = 'records',
+            encoding = 'utf-8',
+            lines = True,
         )
-        self.source_sentences = self.data['contents'].tolist()
+
+        if drop_min:
+            self.source_sentences=self.drop_by_minimum_length(
+                    self.data['contents'].tolist(),
+                    min = drop_min,
+            )
+        else:
+            self.source_sentences = self.drop_by_minimum_length(
+                    self.data['contents'].tolist(),
+                    min=1,
+            )
+
 
     def read_es(
             self,
@@ -307,6 +267,7 @@ class Preprocessor(object):
             port,
             index='happymap_temp',
             match_as_flat_dict=None,
+            drop_min=2,
             ):
         es = Elasticsearch(
             [
@@ -323,10 +284,77 @@ class Preprocessor(object):
             index=index,
             match_as_flat_dict=match_as_flat_dict,
         )
-        self.source_sentences = self.data['contents'].tolist()
 
-    def pos_tag(self):
-        pass
+        if drop_min:
+            self.source_sentences = self.drop_by_minimum_length(
+                    self.data['contents'].tolist(),
+                    min=drop_min,
+            )
+        else:
+            self.source_sentences = self.drop_by_minimum_length(
+                    self.data['contents'].tolist(),
+                    min=1,
+            )
+
+    def pos_tag(
+            self,
+            tag_type=None,
+            ):
+        """
+        tag_type
+        
+        tag_type = tag_list = [
+            '체언 접두사', '명사', '한자', '외국어',
+            '수사', '구분자',
+            '동사',
+            '부정 지정사', '긍정 지정사',
+        ]
+        """
+
+        if tag_type is None:
+            return [
+                self.tagger.pos(s)
+                for s in self.source_sentences
+            ]
+
+        elif tag_type == 'noun':
+            return [
+                self.tagger.nouns(s)
+                for s in self.source_sentences
+            ]
+        
+        elif isinstance(tag_type, Iterable):
+            # tag_type = tag_list = [
+            #     '체언 접두사', '명사', '한자', '외국어',
+            #     '수사', '구분자',
+            #     '동사',
+            #     '부정 지정사', '긍정 지정사',
+            # ]
+            tag_list = list(tag_type)
+
+            tagset_wanted = [
+                tag
+                for tag, desc in self.tagger.tagset.items()
+                for key in tag_list
+                if key in desc
+            ]
+
+            return [
+                self._get_wanted_morphs(s, tagset_wanted)
+                for s in self.source_sentences
+            ]
+
+    def _get_wanted_morphs(self, s, wanted_tags):
+        res_pos = self.tagger.pos(s)
+
+        res = list(
+            filter(
+                lambda x: (x[1] in wanted_tags) and (len(x[0]) > 1),
+                res_pos,
+            )
+        )
+        return [morph[0] for morph in res]
+
 
     def train_spm(
             self,

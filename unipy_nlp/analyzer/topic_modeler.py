@@ -9,6 +9,8 @@ import os
 import re
 import sys
 import json
+import zipfile
+import urllib
 import random
 import warnings
 import subprocess
@@ -31,6 +33,15 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.font_manager as fm
 
+
+__all__ = []
+__all__ += [
+    # 'compute_coherence_values',
+    # 'pick_best_topics',
+    # 'groupby_top_n',
+    # 'get_terminfo_table',
+    'TopicModeler',
+]
 
 def compute_coherence_values(
         dictionary,
@@ -124,12 +135,10 @@ def compute_coherence_values(
         mallet_unzipped_dirname = mallet_filename.split('.zip')[0]
         mallet_path = f'{mallet_unzipped_dirname}/bin/mallet'
 
-        import zipfile
-        import urllib
 
         if not os.path.exists(mallet_path):
             # download the url contents in binary format
-            urllib.urlretrieve(mallet_url, mallet_filename)
+            urllib.request.urlretrieve(mallet_url, mallet_filename)
 
             # open method to open a file on your system and write the contents
             with zipfile.ZipFile(mallet_filename, "r") as zip_ref:
