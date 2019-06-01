@@ -23,11 +23,11 @@
 .. |PyPi| image:: https://badge.fury.io/py/unipy.svg
 .. _PyPi: https://badge.fury.io/py/unipy.svg
 
-.. |Python35| image:: https://img.shields.io/badge/python-3.5-blue.svg 
-.. _Python35: https://badge.fury.io/py/unipy.svg 
-
 .. |Python36| image:: https://img.shields.io/badge/python-3.6-blue.svg 
 .. _Python36: https://badge.fury.io/py/unipy.svg 
+
+.. |Python37| image:: https://img.shields.io/badge/python-3.7-blue.svg 
+.. _Python37: https://badge.fury.io/py/unipy.svg 
 
 .. |DOI| image:: https://zenodo.org/badge/21369/pydemia/unipy.svg
 .. _DOI: https://zenodo.org/badge/latestdoi/21369/pydemia/unipy
