@@ -148,9 +148,11 @@ prep.train_spm(
     model_type='bpe',
     vocab_size=30000,
     model_name='spm_trained',
+    savepath='./data/_tmp_dump',
     random_seed=1,
 )
 prep.load_spm(
+    savepath='./data/_tmp_dump',
     model_name='spm_trained',
     use_bos=False,
     use_eos=False,
@@ -167,3 +169,6 @@ prep.spm_encode(
 
 # %%
 sentence_list[:3]
+
+
+#%%

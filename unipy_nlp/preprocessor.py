@@ -366,9 +366,11 @@ class Preprocessor(object):
     def train_spm(
             self,
             source_type='list',  # {'list', 'txt'}
+            source_file=None,
             model_type='bpe',
             vocab_size=50000,
             model_name='spm_trained',
+            savepath='./data',
             random_seed=None,
             ):
 
@@ -376,19 +378,26 @@ class Preprocessor(object):
 
         source = self.source_sentences
 
+        if savepath.endswith('/'):
+            savepath = savepath[:-1]
+        os.makedirs(savepath, exist_ok=True)
+
         if random_seed:
             random.seed(random_seed)
             np.random.seed(random_seed)
 
         if source_type == 'list':
             spm_source_joined_str = '\n'.join(source)
-            spm_source_file = f'./data/_tmp.txt'
+            spm_source_file = os.path.join(
+                savepath,
+                '_spm_tmp.txt',
+            )
             with open(spm_source_file, 'w') as file:
                 file.write(spm_source_joined_str)
             input_size_int = len(source)
 
         elif source_type == 'txt':
-            spm_source_file = source
+            spm_source_file = source_file
             input_size_int = raw_in_count(spm_source_file)
 
         else:
@@ -420,15 +429,19 @@ class Preprocessor(object):
         )
         spm.SentencePieceTrainer.Train(command_train)
 
-        os.system(f'rm {spm_source_file}')
+        os.system(f"mv ./{model_name}.model {savepath}/")
+        os.system(f"mv ./{model_name}.vocab {savepath}/")
+        os.system(f"rm {spm_source_file}")
 
     def load_spm(
             self,
+            savepath='./data',
             model_name=None,
             use_bos=False,
             use_eos=False,
             vocab_min_freq_threshold=None,
             ):
+
         if model_name is None:
             if self.SPM_MODEL_NAME is None:
                 raise AttributeError(
@@ -443,7 +456,10 @@ class Preprocessor(object):
         else:
             self.SPM_MODEL_NAME = model_name
 
-        model_filename = f'{model_name}.model'
+        model_filename = os.path.join(
+            savepath,
+            f'{model_name}.model',
+        )
         sp = spm.SentencePieceProcessor()
         sp.Load(model_filename)
 

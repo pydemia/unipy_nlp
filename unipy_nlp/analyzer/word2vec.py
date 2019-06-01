@@ -113,7 +113,7 @@ class Word2Vec(object):
         vocab_size = weights.shape[0]
         embedding_dim = weights.shape[1]
 
-        with open(os.path.join("metadata.tsv"), 'w') as f:
+        with open(os.path.join(filepath, "metadata.tsv"), 'w') as f:
             f.writelines("\n".join(idx2words))
 
         tf.reset_default_graph()

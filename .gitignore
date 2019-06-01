@@ -1,9 +1,11 @@
 # User-Defined files
 data/**
 unipy_nlp/_resources/mecab/create_user_dic.py
+*.model
+*.vocab
+metadata.tsv
+.vscode/**
 
-=======
->>>>>>> 7743aa0ab3d92216feb517da609e956c72c6e2a1
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

@@ -179,6 +179,6 @@ core_repr = vnet.get_network_scored_repr_docs(
     savepath=None,
 )
 
-
+core_repr
 
 #%%

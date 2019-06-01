@@ -1,0 +1,19 @@
+sudo: false
+language: python
+python: 
+  - "3.6"
+ #- "3.7"
+
+
+# command to install dependencies
+install:
+  - "pip install -r REQUIREMENTS.txt"
+
+# command to run tests
+script:
+  - echo "script start"
+  #- python tests.py
+  #- ci/script_single.sh
+  #- ci/script_multi.sh
+  #- ci/lint.sh
+  - echo "script done"
