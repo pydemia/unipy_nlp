@@ -757,9 +757,10 @@ class TopicModeler(object):
         if display_ok:
             pyLDAvis.display(self.vis_prepared, local=False)
 
-    def estimate_topics_by_sentences(
+    def estimate_topics_by_documents(
             self,
             target_topic_num,
+            # sentence_list=None,
             random_seed=1,
             save_ok=True,
             savepath='./',
@@ -889,12 +890,43 @@ class TopicModeler(object):
                 header=True,
                 encoding='utf-8',
             )
-        return res_df
+        return self.dominant_topic_estimation_df, self.topic_freq_df
+
+    def load_estimated(
+            self,
+            target_topic_num,
+            savepath='./',
+            filename_affix='lda'
+            ):
+
+        filename_str = os.path.join(
+            savepath,
+            '_'.join([
+                f'{filename_affix}',
+                f'topics-{target_topic_num}',
+                f'dominant_topic_estimation_df.csv',
+            ]),
+        )
+        res_df = pd.read_csv(
+            filename_str,
+            encoding='utf-8',
+        )
+        self.dominant_topic_estimation_df = res_df
+        self.topic_freq_df = (
+            self.dominant_topic_estimation_df
+            .groupby('dominant_topic')
+            ['doc_num']
+            .count()
+            .reset_index()
+            .sort_values('doc_num', ascending=False)
+        )
+
+        return self.dominant_topic_estimation_df, self.topic_freq_df
 
     def get_best_n_terms(self):
         pass
 
-    def _get_representitive_candidates(
+    def get_representitive_candidates(
             self,
             len_range=(10, 30),
             ):
@@ -947,7 +979,7 @@ class TopicModeler(object):
 
         if self.dominant_topic_estimation_df is None:
             raise ValueError(
-                "You should run `estimate_topics_by_sentences` first."
+                "You should run `estimate_topics_by_documents` first."
             )
 
         target_topic_num = len(self.topic_freq_df)
@@ -991,3 +1023,26 @@ class TopicModeler(object):
             )
 
         return reordered
+
+    def load_representitive_documents(
+            self,
+            target_topic_num,
+            top_n=10,
+            savepath='./',
+            filename_affix='lda',
+            ):
+        
+        filename_str = os.path.join(
+            savepath,
+            '_'.join([
+                f'{filename_affix}',
+                f'topics-{target_topic_num}',
+                f'top{top_n}_repr_docs_df.csv',
+            ]),
+        )
+        self.representitive_docs = pd.read_csv(
+            filename_str,
+            encoding='utf-8',
+        )
+
+        return self.representitive_docs

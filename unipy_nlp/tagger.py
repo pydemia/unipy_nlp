@@ -234,13 +234,6 @@ def build_mecab_user_dic(nested_list, mode='a'):
         MEACB_DIC_DIR=dic_source_path,
     )
     out = subprocess.check_output(commands, shell=True)
+    print(out.decode('utf-8'))
 
     reset_mecabrc()
-    
-    
-    # MECABRC_DICPATH
-    # MECABRC_DICPATH = "$MECAB_DIR/dic"
-    # sed - i "s|^dicdir = .*$|${MECABRC_DICPATH}|g" $BASEDIR /$MECAB_DIR/etc/mecabrc
-    # echo "'mecabrc' has been changed: '$MECABRC_DICPATH'"
-
-    print(out.decode('utf-8'))

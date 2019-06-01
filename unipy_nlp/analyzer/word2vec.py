@@ -159,5 +159,7 @@ class Word2Vec(object):
                     "tf-model.cpkt",
                 ),
             )
+        
+        print(f"'Projector Saved: '{save_path}'")
 
         return save_path

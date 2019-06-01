@@ -25,8 +25,6 @@ import numpy as np
 import pandas as pd
 from collections.abc import Iterable
 
-# from konlpy.tag import Mecab
-from .tagger import Mecab
 import gensim
 import sentencepiece as spm
 
@@ -36,6 +34,9 @@ from unicodedata import normalize
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.font_manager as fm
+
+# from konlpy.tag import Mecab
+from .tagger import Mecab
 
 
 __all__ = []
@@ -317,9 +318,15 @@ class Preprocessor(object):
                 for s in self.source_sentences
             ]
 
-        elif tag_type == 'noun':
+        elif tag_type == 'nouns':
             return [
                 self.tagger.nouns(s)
+                for s in self.source_sentences
+            ]
+        
+        elif tag_type == 'morphs':
+            return [
+                self.tagger.morphs(s)
                 for s in self.source_sentences
             ]
         

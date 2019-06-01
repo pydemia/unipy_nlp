@@ -104,14 +104,16 @@ tpm.visualize_lda_to_html(
     save_html_ok=True,
     display_ok=False,
 )
-tpm.estimate_topics_by_sentences(
+
+sentence_labeled = tpm.estimate_topics_by_sentences(
     7,
+    # sentence_list=tokenized,
     random_seed=1,
     save_ok=True,
     savepath='data/_tmp_dump',
     filename_affix='lda',
 )
-tpm.get_representitive_documents(
+sentence_repr = tpm.get_representitive_documents(
     7,
     len_range=(10, 30),
     top_n=10,

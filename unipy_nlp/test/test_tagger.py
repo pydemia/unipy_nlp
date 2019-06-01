@@ -15,13 +15,17 @@ from glob import glob
 import importlib
 import pandas as pd
 import subprocess
+from unicodedata import normalize
 import gensim
 import pyLDAvis
 import pyLDAvis.gensim as gensimvis
 
-from unicodedata import normalize
 import unipy_nlp.preprocessor as uprc
 import unipy_nlp.tagger as utag
+
+from unipy_nlp.tagger import Mecab
+from unipy_nlp.tagger import build_mecab_user_dic as build_dic
+from unipy_nlp._backend import build_mecab
 
 importlib.reload(uprc)
 importlib.reload(utag)
@@ -78,28 +82,7 @@ morphed_filtered = [
     for s in sentenced
 ]
 
-
 # %%
-
-morphed_filtered
-
-
-# %%
-
-import unipy_nlp as unlp
-from unipy_nlp.tagger import Mecab
-from unipy_nlp.tagger import build_mecab_user_dic as build_dic
-from unipy_nlp._backend import build_mecab
-
-tagger = Mecab()
-
-sentenced = [
-    "무궁화 꽃이 피었습니다."
-    "우리는 민족중흥의 역사적 사명을 띠고 이 땅에 태어났다.",
-    "물류서비스사업부문이 self design 상을 캔미팅에서 받았다.",
-    "DT총괄이 수펙스회의에 참석했다."
-]
-[tagger.pos(s) for s in sentenced]
 
 
 sample_list = [
@@ -108,6 +91,5 @@ sample_list = [
     ['의사 결정', 'T'],
 ]
 build_dic(sample_list)
-
 
 build_mecab()
