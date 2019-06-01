@@ -9,13 +9,13 @@
 
 
 .. |Travis| image:: https://travis-ci.org/pydemia/unipy.svg?branch=master
-.. _Travis: https://travis-ci.org/pydemia/unipy
+.. _Travis: https://travis-ci.org/pydemia/unipy_nlp
 
 .. |AppVeyor| image:: https://ci.appveyor.com/api/projects/status/github/pydemia/unipy?branch=master&svg=true
-.. _AppVeyor: https://ci.appveyor.com/project/pydemia/unipy/history
+.. _AppVeyor: https://ci.appveyor.com/project/pydemia/unipy_nlp/history
 
 .. |Coveralls| image:: https://coveralls.io/repos/github/pydemia/unipy/badge.svg?branch=master&service=github
-.. _Coveralls: https://coveralls.io/github/pydemia/unipy
+.. _Coveralls: https://coveralls.io/github/pydemia/unipy_nlp
 
 .. |Readthedocs| image:: https://readthedocs.org/projects/unipy/badge/?version=latest
 .. _Readthedocs: http://unipy.readthedocs.io/en/latest/?badge=latest
@@ -58,7 +58,5 @@ Usage
 
 ::
 
-    import unipy as up
-    import unipy.dataset.api as dm
-
+    import unipy_nlp as unlp
 
