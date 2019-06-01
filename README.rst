@@ -5,7 +5,7 @@
 
 
 |Travis|_  |AppVeyor|_  |Coveralls|_  |Readthedocs|_   
-|PyPi|_  |Python35|_  |Python36|_ |DOI|_
+|PyPi|_  |Python36|_  |Python37|_ |DOI|_
 
 
 .. |Travis| image:: https://travis-ci.org/pydemia/unipy.svg?branch=master
