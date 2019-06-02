@@ -5,7 +5,7 @@
 
 
 |Travis|_  |AppVeyor|_  |Coveralls|_  |Readthedocs|_   
-|PyPi|_  |Python35|_  |Python36|_ |DOI|_
+|PyPi|_  |Python36|_  |Python37|_ |DOI|_
 
 
 .. |Travis| image:: https://travis-ci.org/pydemia/unipy.svg?branch=master
@@ -23,11 +23,11 @@
 .. |PyPi| image:: https://badge.fury.io/py/unipy.svg
 .. _PyPi: https://badge.fury.io/py/unipy.svg
 
-.. |Python35| image:: https://img.shields.io/badge/python-3.5-blue.svg 
-.. _Python35: https://badge.fury.io/py/unipy.svg 
-
 .. |Python36| image:: https://img.shields.io/badge/python-3.6-blue.svg 
 .. _Python36: https://badge.fury.io/py/unipy.svg 
+
+.. |Python37| image:: https://img.shields.io/badge/python-3.7-blue.svg 
+.. _Python37: https://badge.fury.io/py/unipy.svg 
 
 .. |DOI| image:: https://zenodo.org/badge/21369/pydemia/unipy.svg
 .. _DOI: https://zenodo.org/badge/latestdoi/21369/pydemia/unipy
