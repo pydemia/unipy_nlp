@@ -74,7 +74,7 @@ tpm.visualize_lda_to_html(
     r_normalized=False,
     workers_n=6,
     random_seed=1,
-    savepath='data/_tmp_dump',
+    savepath='data/_tmp_dump/topic_modeling',
     filename_affix='lda',
     # save_type='html',  # {'html', 'json'}
     save_relevent_terms_ok=True,
@@ -87,12 +87,12 @@ tpm.visualize_lda_to_html(
 #     # sentence_list=tokenized,
 #     random_seed=1,
 #     save_ok=True,
-#     savepath='data/_tmp_dump',
+#     savepath='data/_tmp_dump/topic_modeling',
 #     filename_affix='lda',
 # )
 sentence_labeled, topic_freq = tpm.load_estimated(
     target_topic_num=7,
-    savepath='data/_tmp_dump',
+    savepath='data/_tmp_dump/topic_modeling',
     filename_affix='lda',
 )
 # sentence_repr = tpm.get_representitive_documents(
@@ -100,13 +100,13 @@ sentence_labeled, topic_freq = tpm.load_estimated(
 #     len_range=(10, 30),
 #     top_n=10,
 #     save_ok=True,
-#     savepath='data/_tmp_dump',
+#     savepath='data/_tmp_dump/topic_modeling',
 #     filename_affix='lda',
 # )
 sentence_repr = tpm.load_representitive_documents(
     7,
     top_n=10,
-    savepath='data/_tmp_dump',
+    savepath='data/_tmp_dump/topic_modeling',
     filename_affix='lda',
 )
 (repr_sentenced,
@@ -143,29 +143,47 @@ tpm.corpora_dict
 # %%
 
 importlib.reload(unet)
-
 vnet = unet.WordNetwork(
     topic_freq_df=tpm.topic_freq_df,
     top_relevant_terms_df=tpm.top_relevant_terms_df,
 )
 
 # vnet.get_ngram(tokenized)
-# vnet.save_ngram('data/_tmp_dump/ngram.json', type='json')
-# vnet.save_ngram('data/_tmp_dump/ngram.csv', type='csv')
+# vnet.save_ngram('data/_tmp_dump/network_plot/ngram.json', type='json')
+# vnet.save_ngram('data/_tmp_dump/network_plot/ngram.csv', type='csv')
 
-vnet.load_ngram('data/_tmp_dump/ngram.json', type='json')
-# vnet.load_ngram('data/_tmp_dump/ngram.csv', type='csv')
+vnet.load_ngram('data/_tmp_dump/network_plot/ngram.json', type='json')
+# vnet.load_ngram('data/_tmp_dump/network_plot/ngram.csv', type='csv')
 
 
 vnet.draw(
-    height="700px",
-    width='800px',  # "100%",
+    height="100%",
+    width='80%',  # "100%",
     bgcolor='#ffffff',  # "#222222",
     font_color='black',  # "white",
     directed=True,
+    topic_top_n=5,
+    node_freq_threshold=100,
+    show_buttons=True,
 )
 
-vnet.save('data/_tmp_dump/vnet.html')
+vnet.save('data/_tmp_dump/network_plot/vnet.html')
+
+# %%
+vnet.top_n_terms_df
+vnet.topic_freq_df[:5].index
+
+# %%
+vnet.linked
+vnet.ixs
+vnet.top_n_terms_df
+vnet.top_n_terms_df.index
+vnet.top_n_terms_df.loc[vnet.ixs[vnet.topic_freq_df[:5].index, :], :]
+vnet.from_topic_freq
+vnet.topic_node_df
+vnet.linked
+vnet.linked[vnet.linked['Category'].isin(vnet.topic_freq_df[:5].index)]
+# %%
 
 # %%
 (score_dict,

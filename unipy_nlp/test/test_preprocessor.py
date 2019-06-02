@@ -2,12 +2,6 @@
 """
 
 # %%
-import os
-
-if __name__ == '__main__':
-    os.chdir('../git/unipy_nlp')
-
-# %%
 
 import elasticsearch as els
 from elasticsearch import Elasticsearch
@@ -39,7 +33,7 @@ importlib.reload(uprc)
 #     dump_json_ok=True,
 #     return_tuple=True,
 # )
-_tmp_filename = './data/_tmp_dump/rawdata_cpred_flatted.json'
+_tmp_filename = './data/_tmp_dump/prep/rawdata_cpred_flatted.json'
 _tmp_df = pd.read_json(
     _tmp_filename,
     orient='records',
@@ -139,8 +133,19 @@ spmed_unspaced = [
 # %% ALL IN ONE (as a `class`)
 
 prep = uprc.Preprocessor()
-prep.read_json('./data/_tmp_dump/rawdata_cpred_flatted.json')
+prep.read_json('./data/_tmp_dump/prep/rawdata_cpred_flatted.json')
 sentence_list = prep.source_sentences
+
+
+morphed_filtered = prep.pos_tag(
+    tag_type=[
+        '체언 접두사', '명사', '한자', '외국어',
+        '수사', '구분자',
+        '동사',
+        '부정 지정사', '긍정 지정사',
+    ]
+)
+print(len(morphed_filtered))
 
 
 prep.train_spm(
@@ -148,11 +153,11 @@ prep.train_spm(
     model_type='bpe',
     vocab_size=30000,
     model_name='spm_trained',
-    savepath='./data/_tmp_dump',
+    savepath='./data/_tmp_dump/spmed',
     random_seed=1,
 )
 prep.load_spm(
-    savepath='./data/_tmp_dump',
+    savepath='./data/_tmp_dump/spmed',
     model_name='spm_trained',
     use_bos=False,
     use_eos=False,

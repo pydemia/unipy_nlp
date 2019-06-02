@@ -74,12 +74,14 @@ class Word2Vec(object):
         )
         self.trained = True
 
-    def save_w2v(self, filename):
-        self.embed.save(filename)
+    def save_w2v(self, filepath):
+        dirpath, filename = os.path.split(filepath)
+        os.makedirs(dirpath, exist_ok=True)
+        self.embed.save(filepath)
         self.trained = True
 
-    def load_w2v(self, filename):
-        self.embed = gensim.models.Word2Vec.load(filename)
+    def load_w2v(self, filepath):
+        self.embed = gensim.models.Word2Vec.load(filepath)
         self.trained = True
 
     def get_similar(self, words, top_n=2):
@@ -100,12 +102,12 @@ class Word2Vec(object):
             print(err)
             return None
 
-    def save_tensorboard(self, filepath=None):
+    def save_tensorboard(self, dirpath=None):
 
         if not self.trained:
             raise Exception('Train `Word2Vec` first.')
 
-        os.makedirs(filepath, exist_ok=True)
+        os.makedirs(dirpath, exist_ok=True)
 
         weights = self.embed.wv.vectors
         idx2words = self.embed.wv.index2word
@@ -113,7 +115,7 @@ class Word2Vec(object):
         vocab_size = weights.shape[0]
         embedding_dim = weights.shape[1]
 
-        with open(os.path.join(filepath, "metadata.tsv"), 'w') as f:
+        with open(os.path.join(dirpath, "metadata.tsv"), 'w') as f:
             f.writelines("\n".join(idx2words))
 
         tf.reset_default_graph()
@@ -130,7 +132,7 @@ class Word2Vec(object):
         embedding_init = W.assign(embedding_placeholder)
 
         writer = tf.summary.FileWriter(
-            filepath,
+            dirpath,
             graph=tf.get_default_graph(),
         )
         saver = tf.train.Saver()
@@ -141,7 +143,7 @@ class Word2Vec(object):
         embedding = config.embeddings.add()
         embedding.tensor_name = W.name
         embedding.metadata_path = os.path.join(
-            filepath,
+            # filepath,
             "metadata.tsv",
         )
         # Saves a configuration file that TensorBoard will read during startup.
@@ -155,7 +157,7 @@ class Word2Vec(object):
             save_path = saver.save(
                 sess,
                 os.path.join(
-                    filepath,
+                    dirpath,
                     "tf-model.cpkt",
                 ),
             )

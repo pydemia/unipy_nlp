@@ -25,7 +25,7 @@ importlib.reload(utpm)
 # %% BEFORE STEP: data_collector
 
 prep = uprc.Preprocessor()
-prep.read_json('./data/_tmp_dump/rawdata_cpred_flatted.json')
+prep.read_json('./data/_tmp_dump/prep/rawdata_cpred_flatted.json')
 sentence_list = prep.source_sentences
 
 # %%
@@ -47,11 +47,11 @@ print(len(morphed_filtered))
 #     model_type='bpe',
 #     vocab_size=30000,
 #     model_name='spm_trained',
-#     savepath = './data/_tmp_dump',
+#     savepath = './data/_tmp_dump/spmed',
 #     random_seed=1,
 # )
 prep.load_spm(
-    savepath='./data/_tmp_dump',
+    savepath='./data/_tmp_dump/spmed',
     model_name='spm_trained',
     use_bos=False,
     use_eos=False,
@@ -91,15 +91,15 @@ tpm.pick_best_lda_topics(
     workers_n=8,
     random_seed=1,
 )
-tpm.save_lda(savepath='data/_tmp_dump', affix='lda')
-tpm.load_lda('data/_tmp_dump')
+tpm.save_lda(savepath='data/_tmp_dump/topic_modeling', affix='lda')
+tpm.load_lda('data/_tmp_dump/topic_modeling')
 tpm.visualize_lda_to_html(
     7,
     top_n=10,
     r_normalized=False,
     workers_n=8,
     random_seed=1,
-    savepath='data/_tmp_dump',
+    savepath='data/_tmp_dump/topic_modeling',
     filename_affix='lda',
     # save_type='html',  # {'html', 'json'}
     save_relevent_terms_ok=True,
@@ -107,12 +107,12 @@ tpm.visualize_lda_to_html(
     display_ok=False,
 )
 
-sentence_labeled = tpm.estimate_topics_by_sentences(
+sentence_labeled = tpm.estimate_topics_by_documents(
     7,
     # sentence_list=tokenized,
     random_seed=1,
     save_ok=True,
-    savepath='data/_tmp_dump',
+    savepath='data/_tmp_dump/topic_modeling',
     filename_affix='lda',
 )
 sentence_repr = tpm.get_representitive_documents(
@@ -120,7 +120,7 @@ sentence_repr = tpm.get_representitive_documents(
     len_range=(10, 30),
     top_n=10,
     save_ok=True,
-    savepath='data/_tmp_dump',
+    savepath='data/_tmp_dump/topic_modeling',
     filename_affix='lda',
 )
 

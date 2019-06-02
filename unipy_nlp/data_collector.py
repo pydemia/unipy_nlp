@@ -372,15 +372,15 @@ def split_and_expand_str_rows(dataframe, colname_str, split_by='\n'):
     return expanded_df
 
 
-def collect_data(filepath, dump_json_ok=True, return_tuple=True):
+def collect_data(filepath, dump_json_ok=True, dumppath=None, return_tuple=True):
 
-    fpath = filepath
-    dump_path = f'{fpath}/_tmp_dump'
-    if not os.path.isdir(dump_path):
-        os.makedirs(dump_path, exist_ok=False)
-        print(f"'Results will be saved in {dump_path}")
+    # fpath = filepath
+    # dumppath = f'{fpath}/_tmp_dump'
+    if not os.path.isdir(dumppath):
+        os.makedirs(dumppath, exist_ok=False)
+        print(f"'Results will be saved in {dumppath}")
 
-    filepath_list = glob(f'{fpath}/saveasnew/*.xlsx')
+    filepath_list = glob(f'{filepath}/saveasnew/*.xlsx')
     category_list = [
         re.findall(r'.*rawdata_(.+)_saveasnew.xlsx', s)[0]
         for s in filepath_list
@@ -427,7 +427,7 @@ def collect_data(filepath, dump_json_ok=True, return_tuple=True):
 
     dump_filename = None
     if dump_json_ok:
-        dump_filename = f'{dump_path}/rawdata_cpred_flatted.json'
+        dump_filename = f'{dumppath}/rawdata_cpred_flatted.json'
         res_df.to_json(
             dump_filename,
             orient='records',

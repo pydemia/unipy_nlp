@@ -198,19 +198,21 @@ class WordNetwork(object):
             columns=['target', 'context'],
         ).dropna()
 
-        self.ngram_list = ngramed
+        self.ngramed_list = ngramed
         self.ngramed_df = ngramed_df
 
         return ngramed_df
 
-    def save_ngram(self, filename, type='json'):
+    def save_ngram(self, filepath, type='json'):
+        dirpath, filename = os.path.split(filepath)
+        os.makedirs(dirpath, exist_ok=True)
         if type == 'json':
-            with open(filename, 'w', encoding='utf-8') as jfile:
+            with open(filepath, 'w', encoding='utf-8') as jfile:
                 # converted_json = json.dumps(obj)
-                json.dump(self.ngram_list, jfile, ensure_ascii=False)
+                json.dump(self.ngramed_list, jfile, ensure_ascii=False)
         elif type == 'csv':
             self.ngramed_df.to_csv(
-                filename,
+                filepath,
                 index=False,
                 header=True,
                 encoding='utf-8',
@@ -473,23 +475,23 @@ class WordNetwork(object):
             title=term,
         )
 
-    # def _hiden_option(
-    #         self,
-    #         v,
-    #         thres=10,
-    #         except_cond=True
-    #         ):
+    def _hidden_option(
+            self,
+            v,
+            thres=10,
+            except_cond=True
+            ):
 
-    #     res = False
-    #     if isinstance(v, float) and (except_cond):
-    #         if v >= thres:
-    #             res = True
-    #         else:
-    #             res = False
-    #     else:
-    #         res = False
-    #     # return True if v >= thres else False
-    #     return res
+        res = False
+        if isinstance(v, float) and (except_cond):
+            if v >= thres:
+                res = True
+            else:
+                res = False
+        else:
+            res = False
+        # return True if v >= thres else False
+        return res
 
     def _sum_inflow(self, node_id):
         return sum(
@@ -515,7 +517,10 @@ class WordNetwork(object):
             bgcolor='#ffffff',  # "#222222",
             font_color='black',  # "white",
             directed=True,
-            notebook=True,
+            notebook=False,
+            topic_top_n=None,
+            node_freq_threshold=None,
+            show_buttons=True,
             ):
 
 
@@ -536,17 +541,31 @@ class WordNetwork(object):
         self.pyvis_net.barnes_hut(
             gravity=-12500,
             central_gravity=12,
-            spring_length=100,  # 180,
+            spring_length=120,  # 180,
             spring_strength=.01,  # 0.04,
-            damping=0.25,
-            overlap=0.,
+            damping=0.9,  # 0.25
+            overlap=0.1,  # 0.
         )
         topic_freq_dict = self.from_topic_freq.to_dict()
         topic_words_df = self.topic_words_df
-        # linked = self.linked
+        topic_node_df = self.topic_node_df
+        linked = self.linked
+
+        if node_freq_threshold is not None:
+            linked = linked[
+                # linked['freq'] >= max(100, linked['freq'].quantile(.5))
+                linked['freq'] >= node_freq_threshold
+            ]
+
+        if topic_top_n is not None:
+            topic_freq_df = self.topic_freq_df[:topic_top_n]
+            topic_node_df = topic_node_df[
+                topic_node_df['Category'].isin(topic_freq_df.index)
+            ]
+            linked = linked[linked['Category'].isin(topic_freq_df.index)]
         # terms_adv_info_df
 
-        for topic_row in self.topic_node_df.itertuples():
+        for topic_row in topic_node_df.itertuples():
             idx, term, _, topic, rgb_str, hex_str = topic_row
             self.pyvis_net.add_node(
                 # n_id=term_id,
@@ -590,7 +609,7 @@ class WordNetwork(object):
             )
 
         # self.pyvis_net.repulsion()
-        for link_row in self.linked.itertuples():
+        for link_row in linked.itertuples():
             (
                 idx, target, context, freq,
                 _term, _id, _topic,
@@ -611,7 +630,10 @@ class WordNetwork(object):
                 shape='circle',  # 'text' if freq < 120 else 'circle',
                 color=hex_str,
                 title=target,
-                # hidden=hiden_option(freq, thres=NODE_THRESHOLD),
+                hidden=(
+                    self._hidden_option(freq, thres=node_freq_threshold)
+                    if node_freq_threshold else None
+                ),
                 size=freq,
                 borderWidthSelected=10,
             )
@@ -624,7 +646,10 @@ class WordNetwork(object):
                 shape='circle',  # 'text' if freq < 120 else 'circle',
                 color=hex_str,
                 title=context,
-                # hidden=hiden_option(freq, thres=NODE_THRESHOLD),
+                hidden=(
+                    self._hidden_option(freq, thres=node_freq_threshold)
+                    if node_freq_threshold else None
+                ),
                 size=freq,
                 borderWidthSelected=10,
             )
@@ -639,7 +664,7 @@ class WordNetwork(object):
 
         # ids_per_topic = self.topic_node_df.groupby(['Category'])['id'].unique()
         ids_per_topic = (
-            self.topic_node_df
+            topic_node_df
             .groupby(['Category'])
             ['id']
             .apply(lambda x: list(set(x)))
@@ -725,11 +750,15 @@ class WordNetwork(object):
         # ‘diagonalCross’, ‘straightCross’,
         # ‘horizontal’, ‘vertical’, ‘curvedCW’, ‘curvedCCW’, ‘cubicBezier’.
         self.pyvis_net.set_edge_smooth('dynamic')
+        if show_buttons:
+            self.pyvis_net.show_buttons(filter_=['physics'])
 
         self.intersection_node_list = intersection_node_list
 
 
     def save(self, filepath_html):
+        dirpath, filename = os.path.split(filepath_html)
+        os.makedirs(dirpath, exist_ok=True)
         self.pyvis_net.save_graph(filepath_html)
         print(f"Saved: '{filepath_html}'")
     
