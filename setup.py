@@ -161,7 +161,7 @@ class SphinxCommand(Command):
 
     def run(self):
         """Run command."""
-        command = ['cd docs;make html;cd ..']
+        command = ['cp README.rst docs/source/index.rst;cd docs;make html;cd ..']
         # command.append(os.getcwd())
         self.announce(
             'Running command: %s' % str(command),
