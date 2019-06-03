@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Tue May 14 15:41:19 2019
+"""Get Data from `xlsx`.
 
-@author: Youngju Jaden Kim
 """
 
 # %%

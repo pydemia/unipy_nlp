@@ -3,7 +3,7 @@
 ;
 ; $Id: mecabrc.in,v 1.3 2006/05/29 15:36:08 taku-ku Exp $;
 ;
-dicdir = /mnt/hdc1/data/git/unipy_nlp/unipy_nlp/_resources/mecab/mecab/dic
+dicdir = mecab/dic
 
 ; userdic = /home/foo/bar/user.dic
 

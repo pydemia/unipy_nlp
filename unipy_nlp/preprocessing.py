@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Tue May 14 11:14:19 2019
-
-@author: Youngju Jaden Kim
+"""Tokenize text with `sentencepiece` & `MeCab`, from `xlsx` & `Elasticsearch`.
 """
 
 
@@ -264,7 +261,7 @@ class Preprocessor(object):
     Examples
     --------
     >>> import unipy_nlp.data_collector as udcl
-    >>> import unipy_nlp.preprocessor as uprc
+    >>> import unipy_nlp.preprocessing as uprc
     >>> from pprint import pprint
     >>> prep = uprc.Preprocessor()
     >>> prep.read_json('./data/_tmp_dump/prep/rawdata_collected.json')
@@ -351,7 +348,7 @@ class Preprocessor(object):
         Example
         -------
 
-        >>> import unipy_nlp.preprocessor as uprc
+        >>> import unipy_nlp.preprocessing as uprc
         >>> prep = uprc.Preprocessor()
         >>> prep.read_json(
         ...     './data/_tmp_dump/prep/rawdata_collected.json',
@@ -425,7 +422,7 @@ class Preprocessor(object):
         Example
         -------
 
-        >>> import unipy_nlp.preprocessor as uprc
+        >>> import unipy_nlp.preprocessing as uprc
         >>> ES_HOST = '52.78.243.101'
         >>> ES_PORT = '9200'
         >>> prep = uprc.Preprocessor()
@@ -497,7 +494,7 @@ class Preprocessor(object):
         Example
         -------
 
-        >>> import unipy_nlp.preprocessor as uprc
+        >>> import unipy_nlp.preprocessing as uprc
         >>> ES_HOST = '52.78.243.101'
         >>> ES_PORT = '9200'
         >>> prep = uprc.Preprocessor()
@@ -619,7 +616,7 @@ class Preprocessor(object):
         Example
         -------
 
-        >>> import unipy_nlp.preprocessor as uprc
+        >>> import unipy_nlp.preprocessing as uprc
         >>> prep = uprc.Preprocessor()
         >>> prep.read_json('./data/_tmp_dump/prep/rawdata_collected.json')
         >>> prep.train_spm(
@@ -723,7 +720,7 @@ class Preprocessor(object):
         Example
         -------
 
-        >>> import unipy_nlp.preprocessor as uprc
+        >>> import unipy_nlp.preprocessing as uprc
         >>> prep = uprc.Preprocessor()
         >>> prep.read_json('./data/_tmp_dump/prep/rawdata_collected.json')
         >>> prep.load_spm(
@@ -793,7 +790,7 @@ class Preprocessor(object):
         Example
         -------
 
-        >>> import unipy_nlp.preprocessor as uprc
+        >>> import unipy_nlp.preprocessing as uprc
         >>> prep = uprc.Preprocessor()
         >>> prep.read_json('./data/_tmp_dump/prep/rawdata_collected.json')
         >>> prep.load_spm(

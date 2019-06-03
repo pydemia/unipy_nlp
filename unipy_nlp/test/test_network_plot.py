@@ -15,8 +15,8 @@ import pyLDAvis
 import pyLDAvis.gensim as gensimvis
 
 from unicodedata import normalize
-import unipy_nlp.preprocessor as uprc
-import unipy_nlp.analyzer.topic_modeler as utpm
+import unipy_nlp.preprocessing as uprc
+import unipy_nlp.analyze.topic_modeling as utpm
 import unipy_nlp.network_plot as unet
 
 importlib.reload(uprc)

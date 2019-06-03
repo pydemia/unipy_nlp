@@ -15,8 +15,8 @@ import pyLDAvis
 import pyLDAvis.gensim as gensimvis
 
 from unicodedata import normalize
-import unipy_nlp.preprocessor as uprc
-import unipy_nlp.analyzer.word2vec as uw2v
+import unipy_nlp.preprocessing as uprc
+import unipy_nlp.analyze.word2vec as uw2v
 
 importlib.reload(uprc)
 importlib.reload(uw2v)

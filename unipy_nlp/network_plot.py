@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Tue Jun 01 15:41:19 2019
-
-@author: Youngju Jaden Kim
+"""A N-gram network plot.
 """
 
 import os
@@ -213,10 +210,10 @@ class WordNetwork(object):
     --------
 
     Preprocessing
-        ``unipy_nlp.preprocessor.Preprocessor``
+        ``unipy_nlp.preprocessing.Preprocessor``
     
     Topic Modeling
-        ``unipy_nlp.topic_modeler.Topic_modeler``
+        ``unipy_nlp.analyze.topic_modeling.Topic_modeler``
 
     POS-Tagging
         ``konlpy.tag.Mecab``
@@ -228,7 +225,8 @@ class WordNetwork(object):
     --------
 
     >>> import unipy_nlp.data_collector as udcl
-    >>> import unipy_nlp.preprocessor as uprc
+    >>> import unipy_nlp.preprocessing as uprc
+    >>> import unipy_nlp.analyze.topic_modeling as utpm
     >>> import unipy_nlp.network_plot as unet
     >>> tpm = utpm.TopicModeler(sentence_list, tokenized)
     >>> tpm.train_lda(...)
@@ -295,7 +293,8 @@ class WordNetwork(object):
         --------
 
         >>> import unipy_nlp.data_collector as udcl
-        >>> import unipy_nlp.preprocessor as uprc
+        >>> import unipy_nlp.preprocessing as uprc
+        >>> import unipy_nlp.analyze.topic_modeling as utpm
         >>> import unipy_nlp.network_plot as unet
         >>> tpm = utpm.TopicModeler(sentence_list, tokenized)
         >>> tpm.train_lda(...)
@@ -335,7 +334,8 @@ class WordNetwork(object):
         --------
 
         >>> import unipy_nlp.data_collector as udcl
-        >>> import unipy_nlp.preprocessor as uprc
+        >>> import unipy_nlp.preprocessing as uprc
+        >>> import unipy_nlp.analyze.topic_modeling as utpm
         >>> import unipy_nlp.network_plot as unet
         >>> tpm = utpm.TopicModeler(sentence_list, tokenized)
         >>> tpm.train_lda(...)
@@ -381,7 +381,8 @@ class WordNetwork(object):
         --------
 
         >>> import unipy_nlp.data_collector as udcl
-        >>> import unipy_nlp.preprocessor as uprc
+        >>> import unipy_nlp.preprocessing as uprc
+        >>> import unipy_nlp.analyze.topic_modeling as utpm
         >>> import unipy_nlp.network_plot as unet
         >>> tpm = utpm.TopicModeler(sentence_list, tokenized)
         >>> tpm.train_lda(...)
@@ -733,7 +734,8 @@ class WordNetwork(object):
         -------
 
         >>> import unipy_nlp.data_collector as udcl
-        >>> import unipy_nlp.preprocessor as uprc
+        >>> import unipy_nlp.preprocessing as uprc
+        >>> import unipy_nlp.analyze.topic_modeling as utpm
         >>> import unipy_nlp.network_plot as unet
         >>> tpm = utpm.TopicModeler(sentence_list, tokenized)
         >>> tpm.train_lda(...)
@@ -1004,7 +1006,8 @@ class WordNetwork(object):
         -------
 
         >>> import unipy_nlp.data_collector as udcl
-        >>> import unipy_nlp.preprocessor as uprc
+        >>> import unipy_nlp.preprocessing as uprc
+        >>> import unipy_nlp.analyze.topic_modeling as utpm
         >>> import unipy_nlp.network_plot as unet
         >>> tpm = utpm.TopicModeler(sentence_list, tokenized)
         >>> tpm.train_lda(...)
@@ -1053,7 +1056,8 @@ class WordNetwork(object):
         -------
 
         >>> import unipy_nlp.data_collector as udcl
-        >>> import unipy_nlp.preprocessor as uprc
+        >>> import unipy_nlp.preprocessing as uprc
+        >>> import unipy_nlp.analyze.topic_modeling as utpm
         >>> import unipy_nlp.network_plot as unet
         >>> tpm = utpm.TopicModeler(sentence_list, tokenized)
         >>> tpm.train_lda(...)
@@ -1146,7 +1150,8 @@ class WordNetwork(object):
         -------
 
         >>> import unipy_nlp.data_collector as udcl
-        >>> import unipy_nlp.preprocessor as uprc
+        >>> import unipy_nlp.preprocessing as uprc
+        >>> import unipy_nlp.analyze.topic_modeling as utpm
         >>> import unipy_nlp.network_plot as unet
         >>> tpm = utpm.TopicModeler(sentence_list, tokenized)
         >>> tpm.train_lda(...)

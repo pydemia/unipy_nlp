@@ -20,7 +20,7 @@ import gensim
 import pyLDAvis
 import pyLDAvis.gensim as gensimvis
 
-import unipy_nlp.preprocessor as uprc
+import unipy_nlp.preprocessing as uprc
 import unipy_nlp.tagger as utag
 
 from unipy_nlp.tagger import Mecab
@@ -36,8 +36,7 @@ importlib.reload(utag)
 sentenced = [
     "무궁화 꽃이 피었습니다."
     "우리는 민족중흥의 역사적 사명을 띠고 이 땅에 태어났다.",
-    "물류서비스사업부문이 self design 상을 캔미팅에서 받았다.",
-    "DT총괄이 수펙스회의에 참석했다."
+    "수펙스협의회에서 self design 상을 캔미팅에서 받았다.",
 ]
 
 tagger = utag.Mecab()

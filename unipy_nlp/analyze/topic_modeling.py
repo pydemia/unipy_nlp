@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Tue May 14 15:41:19 2019
-
-@author: Youngju Jaden Kim
+"""Topic Modeling(LDA) & Word2Vec.
 """
 
 import os
@@ -627,7 +624,7 @@ class TopicModeler(object):
     See Also
     --------
     Preprocessing
-        ``unipy_nlp.preprocessor.Preprocessor``
+        ``unipy_nlp.preprocessing.Preprocessor``
 
     POS-Tagging
         ``konlpy.tag.Mecab``
@@ -639,7 +636,8 @@ class TopicModeler(object):
     --------
 
     >>> import unipy_nlp.data_collector as udcl
-    >>> import unipy_nlp.preprocessor as uprc
+    >>> import unipy_nlp.preprocessing as uprc
+    >>> import unipy_nlp.analyze.topic_modeling as utpm
     >>> from pprint import pprint
     >>> prep = uprc.Preprocessor()
     >>> prep.read_json('./data/_tmp_dump/prep/rawdata_collected.json')
@@ -761,6 +759,25 @@ class TopicModeler(object):
         Example
         -------
 
+        >>> import unipy_nlp.data_collector as udcl
+        >>> import unipy_nlp.preprocessing as uprc
+        >>> import unipy_nlp.analyze.topic_modeling as utpm
+        >>> from pprint import pprint
+        >>> prep = uprc.Preprocessor()
+        >>> prep.read_json('./data/_tmp_dump/prep/rawdata_collected.json')
+        >>> sentence_for_pos_list = [
+        ...     "무궁화 꽃이 피었습니다."
+        ...     "우리는 민족중흥의 역사적 사명을 띠고 이 땅에 태어났다.",
+        ... ]
+        >>> tokenized = prep.pos_tag(
+        ...     input_text=sentence_for_pos_list,
+        ...     tag_type=[
+        ...         '체언 접두사', '명사', '한자', '외국어',
+        ...         '수사', '구분자',
+        ...         '동사',
+        ...         '부정 지정사', '긍정 지정사',
+        ...     ]
+        ... )
         >>> tpm = utpm.TopicModeler(sentence_list, tokenized)
         >>> tpm.train_lda(
         ...     num_topic=5,
@@ -806,6 +823,7 @@ class TopicModeler(object):
         Example
         -------
 
+        >>> import unipy_nlp.analyze.topic_modeling as utpm
         >>> tpm = utpm.TopicModeler(sentence_list, tokenized)
         >>> tpm.pick_best_lda_topics(
         ...     num_topic=5,
@@ -848,6 +866,7 @@ class TopicModeler(object):
         Example
         -------
 
+        >>> import unipy_nlp.analyze.topic_modeling as utpm
         >>> tpm = utpm.TopicModeler(sentence_list, tokenized)
         >>> tpm.pick_best_lda_topics(
         ...     num_topic=5,
@@ -899,6 +918,7 @@ class TopicModeler(object):
         Example
         -------
 
+        >>> import unipy_nlp.analyze.topic_modeling as utpm
         >>> tpm = utpm.TopicModeler(sentence_list, tokenized)
         >>> tpm.load_lda('data/_tmp_dump/topic_modeling')
 
@@ -1040,6 +1060,7 @@ class TopicModeler(object):
         Example
         -------
 
+        >>> import unipy_nlp.analyze.topic_modeling as utpm
         >>> tpm = utpm.TopicModeler(sentence_list, tokenized)
         >>> tpm.pick_best_lda_topics(
         ...     num_topic=5,
@@ -1167,6 +1188,7 @@ class TopicModeler(object):
         Example
         -------
 
+        >>> import unipy_nlp.analyze.topic_modeling as utpm
         >>> tpm = utpm.TopicModeler(sentence_list, tokenized)
         >>> tpm.pick_best_lda_topics(
         ...     num_topic=5,
@@ -1339,6 +1361,7 @@ class TopicModeler(object):
         Example
         -------
 
+        >>> import unipy_nlp.analyze.topic_modeling as utpm
         >>> tpm = utpm.TopicModeler(sentence_list, tokenized)
         >>> tpm.pick_best_lda_topics(
         ...     num_topic=5,
@@ -1414,6 +1437,7 @@ class TopicModeler(object):
         Example
         -------
 
+        >>> import unipy_nlp.analyze.topic_modeling as utpm
         >>> tpm = utpm.TopicModeler(sentence_list, tokenized)
         >>> tpm.pick_best_lda_topics(
         ...     num_topic=5,
@@ -1507,6 +1531,7 @@ class TopicModeler(object):
         Example
         -------
 
+        >>> import unipy_nlp.analyze.topic_modeling as utpm
         >>> tpm = utpm.TopicModeler(sentence_list, tokenized)
         >>> tpm.pick_best_lda_topics(
         ...     num_topic=5,
@@ -1620,6 +1645,7 @@ class TopicModeler(object):
         Example
         -------
 
+        >>> import unipy_nlp.analyze.topic_modeling as utpm
         >>> tpm = utpm.TopicModeler(sentence_list, tokenized)
         >>> tpm.pick_best_lda_topics(
         ...     num_topic=5,

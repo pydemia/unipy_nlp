@@ -1,8 +1,57 @@
 """NLP Analysis Tools.
 
+unipy_nlp
+=========
+Provides
+  1. NLP Data Handling Tools
+  2. NLP Analysis Functions.
+  3. POS-Tagger (MeCab, non-sudo intall required.)
+  4. Topic Modeling(LDA)
+  5. Word2Vec
+  6. NLP network plot.
+
+How to use
+----------
+In terms of Data science, Data Preprocessing & Plotting is one of the most
+annoying parts of Data Analysis. ``unipy`` offers you many functions maybe
+once you have tried to search in ``google`` or ``stackoverflow``.
+
+The docstring examples assume that `unipy` has been imported as `up`::
+  >>> import unipy_nlp as unlp
+
+Use the built-in ``help`` function to view a function's docstring::
+  >>> help(np.sort)
+  ... # doctest: +SKIP
+
+General-purpose documents like a glossary and help on the basic concepts
+of numpy are available under the ``docs`` sub-module::
+  >>> from unipy import docs
+  >>> help(docs)
+  ... # doctest: +SKIP
+
+Available subpackages
+---------------------
+data_collector
+    Get Data from `xlsx`.
+
+tagger
+    A MeCab Wrapper without installation.
+
+preprocessing
+    Tokenize text with `sentencepiece` & `MeCab`, from `xlsx` & `Elasticsearch`.
+
+analyze
+    Topic Modeling(LDA) & Word2Vec.
+
+network_plot
+    A N-gram network plot.
+
+test
+    Test-codes of ``unipy_nlp``
+
 This module provides a number of useful functions for natural language handling.
 
-analyzer
+analyze
 ------------
 - `func` -- Description here.
 
@@ -36,8 +85,8 @@ from ._backend import (__DIR_EXIST_OK__,
 from . import _backend
 from . import data_collector
 from . import tagger
-from . import preprocessor
-from . import analyzer
+from . import preprocessing
+from . import analyze
 
 # from unipy_nlp.tagger import *
 
