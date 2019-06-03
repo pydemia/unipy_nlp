@@ -101,7 +101,6 @@ tpm.visualize_lda_to_html(
     random_seed=1,
     savepath='data/_tmp_dump/topic_modeling',
     filename_affix='lda',
-    # save_type='html',  # {'html', 'json'}
     save_relevent_terms_ok=True,
     save_html_ok=True,
     display_ok=False,
@@ -115,6 +114,12 @@ sentence_labeled = tpm.estimate_topics_by_documents(
     savepath='data/_tmp_dump/topic_modeling',
     filename_affix='lda',
 )
+sentence_labeled, topic_freq = tpm.load_estimated(
+    target_topic_num=7,
+    savepath='data/_tmp_dump/topic_modeling',
+    filename_affix='lda',
+)
+
 sentence_repr = tpm.get_representitive_documents(
     7,
     len_range=(10, 30),
@@ -123,6 +128,17 @@ sentence_repr = tpm.get_representitive_documents(
     savepath='data/_tmp_dump/topic_modeling',
     filename_affix='lda',
 )
+sentence_repr = tpm.load_representitive_documents(
+    7,
+    top_n=10,
+    savepath='data/_tmp_dump/topic_modeling',
+    filename_affix='lda',
+)
 
+(repr_sentenced,
+ repr_bow_corpus_doc,
+ repr_bow_corpus_idx) = tpm.get_representitive_candidates(
+    len_range=(12, 30),
+)
 
 #%%

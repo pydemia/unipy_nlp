@@ -169,21 +169,6 @@ vnet.draw(
 
 vnet.save('data/_tmp_dump/network_plot/vnet.html')
 
-# %%
-vnet.top_n_terms_df
-vnet.topic_freq_df[:5].index
-
-# %%
-vnet.linked
-vnet.ixs
-vnet.top_n_terms_df
-vnet.top_n_terms_df.index
-vnet.top_n_terms_df.loc[vnet.ixs[vnet.topic_freq_df[:5].index, :], :]
-vnet.from_topic_freq
-vnet.topic_node_df
-vnet.linked
-vnet.linked[vnet.linked['Category'].isin(vnet.topic_freq_df[:5].index)]
-# %%
 
 # %%
 (score_dict,
@@ -194,7 +179,7 @@ core_repr = vnet.get_network_scored_repr_docs(
     bow_corpus=repr_bow_corpus_doc,
     repr_docs=repr_sentenced,
     save_ok=True,
-    savepath=None,
+    filepath=None,
 )
 
 core_repr

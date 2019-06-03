@@ -372,23 +372,78 @@ def split_and_expand_str_rows(dataframe, colname_str, split_by='\n'):
     return expanded_df
 
 
-def collect_data(filepath, dump_json_ok=True, dumppath=None, return_tuple=True):
+def collect_data(
+        filepath,
+        dump_filepath=None,
+        dump_json_ok=True,
+        return_tuple=True
+        ):
+    """
+    Summary
 
+    This function is for to gather text from `xslx` rawdata.
+    Not designed for general uses.
+
+    Parameters
+    ----------
+    filepath: str
+        A directory `xslx` file(s) exists.
+
+    dump_json_ok: bool (default: `True`)
+        `True` if 
+    how: {'equal', 'remaining'}
+        The method to split.
+        'equal' is to split chunks with the approximate length
+        within the given size.
+        'remaining' is to split chunks with the given size,
+        and the remains are bound as the last chunk.
+
+    size: int
+        The number of chunks.
+
+    Returns
+    -------
+    list
+        A list of chunks.
+
+    See Also
+    --------
+
+    Examples
+    --------
+    >>> up.splitter(list(range(10)), how='equal', size=3)
+    [(0, 1, 2, 3), (4, 5, 6), (7, 8, 9)]
+
+    >>> up.splitter(list(range(10)), how='remaining', size=3)
+    [(0, 1, 2), (3, 4, 5), (6, 7, 8), (9,)]
+
+    """
     # fpath = filepath
     # dumppath = f'{fpath}/_tmp_dump'
+    dumppath, dumpfile = os.path.split(dump_filepath)
     if not os.path.isdir(dumppath):
         os.makedirs(dumppath, exist_ok=False)
-        print(f"'Results will be saved in {dumppath}")
+        print(f"'Results will be saved: {dump_filepath}")
 
-    filepath_list = glob(f'{filepath}/saveasnew/*.xlsx')
+    filepath_list = glob(
+        os.path.join(
+            filepath,
+            '*.xlsx',
+        )
+    )
+    # category_list = [
+    #     re.findall(r'.*rawdata_(.+)_saveasnew.xlsx', s)[0]
+    #     for s in filepath_list
+    # ]
     category_list = [
-        re.findall(r'.*rawdata_(.+)_saveasnew.xlsx', s)[0]
-        for s in filepath_list
+        os.path.splitext(os.path.basename(fpath))[0]
+        for fpath in filepath_list
     ]
+    print(category_list)
     loaded_gen = (
         (category,
             read_xlsx_all_sheets(filepath)
-            if 'usymphony' not in category
+            if 'usymp' not in category
             else read_xlsx_usymp(filepath)
         )
         for category, filepath in zip(category_list, filepath_list)
@@ -427,7 +482,7 @@ def collect_data(filepath, dump_json_ok=True, dumppath=None, return_tuple=True):
 
     dump_filename = None
     if dump_json_ok:
-        dump_filename = f'{dumppath}/rawdata_cpred_flatted.json'
+        dump_filename = dump_filepath
         res_df.to_json(
             dump_filename,
             orient='records',

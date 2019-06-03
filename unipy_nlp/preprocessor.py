@@ -225,14 +225,103 @@ def spm_encode(
 
 
 class Preprocessor(object):
+    """Text Preprocessing with POS-Tagging or Byte-Pair Encoding.
 
+    Get tokenized from text.
+
+    Parameters
+    ----------
+    tagger: str `{'mecab',}`
+        A POS-Tagging Engine to use.
+
+    Attributes
+    ----------
+    source_sentences: list
+        sentences from text, given by `read_json` or `read_es`.
+
+    Methods
+    -------
+    read_json
+
+    read_es
+
+    pos_tag
+
+    train_spm
+
+    load_spm
+
+    spm_encode
+
+    See Also
+    --------
+    POS-Tagging
+        ``konlpy.tag.Mecab``
+
+    Byte-Pair Encoding
+        ``sentencepiece``
+
+    Examples
+    --------
+    >>> import unipy_nlp.data_collector as udcl
+    >>> import unipy_nlp.preprocessor as uprc
+    >>> from pprint import pprint
+    >>> prep = uprc.Preprocessor()
+    >>> prep.read_json('./data/_tmp_dump/prep/rawdata_collected.json')
+    >>> sentence_for_pos_list = [
+    ...     "무궁화 꽃이 피었습니다."
+    ...     "우리는 민족중흥의 역사적 사명을 띠고 이 땅에 태어났다.",
+    ... ]
+    >>> tokenized_morphed_filtered = prep.pos_tag(
+    ...     input_text=sentence_for_pos_list,
+    ...     tag_type=[
+    ...         '체언 접두사', '명사', '한자', '외국어',
+    ...         '수사', '구분자',
+    ...         '동사',
+    ...         '부정 지정사', '긍정 지정사',
+    ...     ]
+    ... )
+    >>> print(tokenized_morphed_filtered)
+    [['무궁화'], ['우리', '민족중흥', '역사', '사명']]
+    >>> prep.train_spm(
+    ...     source_type='list',
+    ...     model_type='bpe',
+    ...     vocab_size=30000,
+    ...     model_name='spm_trained',
+    ...     savepath='./data/_tmp_dump/spmed',
+    ...     random_seed=1,
+    ... )
+    >>> prep.load_spm(
+    ...     savepath='./data/_tmp_dump/spmed',
+    ...     model_name='spm_trained',
+    ...     use_bos=False,
+    ...     use_eos=False,
+    ...     vocab_min_freq_threshold=None,
+    ... )
+    >>> sentence_for_spm_list = [
+    ...     "새로운 기술환경의 발전과 확산이 진행되는 it환경",
+    ...     "비즈니스 환경과의 접목에 집중해 새로운 사업영역 선점",
+    ... ] 
+    >>> tokenized_spmed = prep.spm_encode(
+    ...     sentence_for_spm_list,
+    ...     type='piece',
+    ...     rm_space=True,
+    ... )
+    >>> pprint(tokenized_spmed)
+    [['새로운', '기술', '환경의', '발전과', '확산이', '진행되는', 'it', '환경'],
+    ['비즈니스', '환경', '과의', '접목', '에', '집중', '해', '새로운', '사업영역', '선점'],
+
+    """
     def __init__(
             self,
             tagger='mecab',  # {'mecab', 'kkma', 'twitter', etc.}
             ):
         self.SPM_MODEL_NAME = None
         self.source_sentences = None
-        self.tagger = Mecab()
+
+        if tagger == 'mecab':
+            self.tagger = Mecab()
+            self.tagset = list(self.tagger.tagset.items())
 
     def drop_by_minimum_length(self, sentence_list, min=2):
         return list(filter(lambda s: len(s) > min, sentence_list))
@@ -240,24 +329,54 @@ class Preprocessor(object):
     def read_json(
             self,
             filename,
-            drop_min = 2,
+            key='contents',
+            drop_min=2,
             ):
+        """
+        Read sentences from disk, as `self.source_sentences`.
 
+        Parameters
+        ----------
+        filename: str
+            A filepath to read.
+        
+        key: str
+            A key of sentences in json object.
+        
+        drop_min: int (default: 2)
+            A lower bond of sentence length.
+            If an inappropriate value is given,
+            it will be changed by `1` systemically.
+
+        Example
+        -------
+
+        >>> import unipy_nlp.preprocessor as uprc
+        >>> prep = uprc.Preprocessor()
+        >>> prep.read_json(
+        ...     './data/_tmp_dump/prep/rawdata_collected.json',
+        ...     key='contents',
+        ...     drop_min=2,
+        ... )
+        >>> prep.source_sentences[:2]
+        ['새로운 기술환경의 발전과 확산이 진행되는 it환경', '비즈니스 환경과의 접목에 집중해 새로운 사업영역 선점']
+
+        """
         self.data=pd.read_json(
             filename,
-            orient = 'records',
-            encoding = 'utf-8',
-            lines = True,
+            orient='records',
+            encoding='utf-8',
+            lines=True,
         )
 
-        if drop_min:
+        if drop_min > 1:
             self.source_sentences=self.drop_by_minimum_length(
-                    self.data['contents'].tolist(),
-                    min = drop_min,
+                    self.data[key].tolist(),
+                    min=drop_min,
             )
         else:
             self.source_sentences = self.drop_by_minimum_length(
-                    self.data['contents'].tolist(),
+                    self.data[key].tolist(),
                     min=1,
             )
 
@@ -268,8 +387,63 @@ class Preprocessor(object):
             port,
             index='happymap_temp',
             match_as_flat_dict=None,
+            key='contents',
             drop_min=2,
             ):
+        """
+        Read sentences from Elasticsearch, as `self.source_sentences`.
+
+        Parameters
+        ----------
+        host: str
+            A domain address of Elasticsearch server.
+        
+        port: str
+            A port number of Elasticsearch server.
+        
+        index: str
+            An index of Elasticsearch server.
+        
+        match_as_flat_dict: str (default: None)
+            An option to `query_match`.
+            `match_all` If None.
+            Example:
+            ```
+            match_as_flat_dict={
+                'sheet_nm': '2019',
+                'table_nm': 'board',
+            }
+            ```
+        key: str
+            A key of sentences in an object.
+
+        drop_min: int (default: 2)
+            A lower bond of sentence length.
+            If an inappropriate value is given,
+            it will be changed by `1` systemically.
+        
+        Example
+        -------
+
+        >>> import unipy_nlp.preprocessor as uprc
+        >>> ES_HOST = '52.78.243.101'
+        >>> ES_PORT = '9200'
+        >>> prep = uprc.Preprocessor()
+        >>> prep.read_es(
+        ...     host=ES_HOST,
+        ...     port=ES_PORT,
+        ...     index='logs',
+        ...     match_as_flat_dict={
+        ...         'sheet_nm': '2019',
+        ...         'table_nm': 'board',
+        ...     },
+        ...     key='contents',
+        ...     drop_min=2,
+        ... )
+        >>> prep.source_sentences[:2]
+        ['새로운 기술환경의 발전과 확산이 진행되는 it환경', '비즈니스 환경과의 접목에 집중해 새로운 사업영역 선점']
+
+        """
         es = Elasticsearch(
             [
                 {
@@ -286,48 +460,84 @@ class Preprocessor(object):
             match_as_flat_dict=match_as_flat_dict,
         )
 
-        if drop_min:
+        if drop_min > 1:
             self.source_sentences = self.drop_by_minimum_length(
-                    self.data['contents'].tolist(),
+                    self.data[key].tolist(),
                     min=drop_min,
             )
         else:
             self.source_sentences = self.drop_by_minimum_length(
-                    self.data['contents'].tolist(),
+                    self.data[key].tolist(),
                     min=1,
             )
 
     def pos_tag(
             self,
+            input_text=None,
             tag_type=None,
             ):
         """
-        tag_type
+        POS-Tagging with `input_text` or pre-loaded sentences.
+
+        Parameters
+        ----------
+        input_text: list (default: `None`)
+            A list of sentences.
+            If `None`, use `self.source_sentences` internally.
         
-        tag_type = tag_list = [
-            '체언 접두사', '명사', '한자', '외국어',
-            '수사', '구분자',
-            '동사',
-            '부정 지정사', '긍정 지정사',
-        ]
+        tag_type: list (default: `None`)
+            A tag name to subset.
+            You can use `'NNP'` or `'일반 명사'` either.
+
+
+        Return
+        ------
+        tokenized: list
+
+        Example
+        -------
+
+        >>> import unipy_nlp.preprocessor as uprc
+        >>> ES_HOST = '52.78.243.101'
+        >>> ES_PORT = '9200'
+        >>> prep = uprc.Preprocessor()
+        >>> sentence_for_pos_list = [
+        ...     "무궁화 꽃이 피었습니다.",
+        ...     "우리는 민족중흥의 역사적 사명을 띠고 이 땅에 태어났다.",
+        ... ]
+        >>> tokenized = prep.pos_tag(
+        ...     input_text=sentence_for_pos_list,
+        ...     tag_type=[
+        ...         '체언 접두사', '명사', '한자', '외국어',
+        ...         '수사', '구분자',
+        ...         '동사',
+        ...         '부정 지정사', '긍정 지정사',
+        ...         'NNP', 'NNG',
+        ...     ]
+        ... )
+        >>> print(tokenized)
+        [['무궁화'], ['우리', '민족중흥', '역사', '사명']]
+
         """
+        if input_text is None:
+            input_text = self.source_sentences
 
         if tag_type is None:
             return [
                 self.tagger.pos(s)
-                for s in self.source_sentences
+                for s in input_text
             ]
 
         elif tag_type == 'nouns':
             return [
                 self.tagger.nouns(s)
-                for s in self.source_sentences
+                for s in input_text
             ]
         
         elif tag_type == 'morphs':
             return [
                 self.tagger.morphs(s)
-                for s in self.source_sentences
+                for s in input_text
             ]
         
         elif isinstance(tag_type, Iterable):
@@ -339,16 +549,25 @@ class Preprocessor(object):
             # ]
             tag_list = list(tag_type)
 
-            tagset_wanted = [
+            tagset_wanted_from_desc = set([
                 tag
                 for tag, desc in self.tagger.tagset.items()
                 for key in tag_list
                 if key in desc
-            ]
+            ])
+            tagset_wanted_from_key = set([
+                tag
+                for tag, desc in self.tagger.tagset.items()
+                for key in tag_list
+                if key in tag
+            ])
+            tagset_wanted = list(
+                tagset_wanted_from_desc.union(tagset_wanted_from_key)
+            )
 
             return [
                 self._get_wanted_morphs(s, tagset_wanted)
-                for s in self.source_sentences
+                for s in input_text
             ]
 
     def _get_wanted_morphs(self, s, wanted_tags):
@@ -373,6 +592,46 @@ class Preprocessor(object):
             savepath='./data',
             random_seed=None,
             ):
+        """
+        A high-level wrapper for `sentencepiece.SentencePieceTrainer.Train`.
+
+        Parameters
+        ----------
+        source_type: str (default: `'list'`)
+            `list`: Use `self.source_sentences` as an input.
+            `txt`: Use a given text file as an input. It should be split by a sentence.
+
+        model_type: str (default: `'bpe'`, `{'bpe', 'word', 'char', 'unigram'}`)
+            A model_type of `sentencepiece`.
+        
+        vocab_size: int (default: `50000`)
+            Embedding size of `sentencepiece`.
+        
+        model_name: str (default: `'spm_trained'`)
+            A filename prefix to save.
+        
+        savepath: str (default: `'./data'`)
+            A dirpath to save.
+        
+        random_seed: int (default: `None`)
+            A random seed number.
+
+        Example
+        -------
+
+        >>> import unipy_nlp.preprocessor as uprc
+        >>> prep = uprc.Preprocessor()
+        >>> prep.read_json('./data/_tmp_dump/prep/rawdata_collected.json')
+        >>> prep.train_spm(
+        ...     source_type='list',
+        ...     model_type='bpe',
+        ...     vocab_size=30000,
+        ...     model_name='spm_trained',
+        ...     savepath='./data/_tmp_dump/spmed',
+        ...     random_seed=1,
+        ... )
+
+        """
 
         self.SPM_MODEL_NAME = model_name
 
@@ -441,6 +700,41 @@ class Preprocessor(object):
             use_eos=False,
             vocab_min_freq_threshold=None,
             ):
+        """
+        A high-level wrapper for `sentencepiece.SentencePieceTrainer.Load`.
+
+        Parameters
+        ----------
+        savepath: str (default: `'./data'`)
+            A dirpath to load.
+
+        model_name: str (default: `'spm_trained'`)
+            A filename prefix to load.
+
+        use_bos: bool (default: `False`)
+            An option of `SetEncodeExtraOptions`.
+
+        use_eos: bool (default: `False`)
+            An option of `SetEncodeExtraOptions`.
+
+        vocab_min_freq_threshold: int (default: `None`)
+            An lower bound of vocabulary by its frequency.
+
+        Example
+        -------
+
+        >>> import unipy_nlp.preprocessor as uprc
+        >>> prep = uprc.Preprocessor()
+        >>> prep.read_json('./data/_tmp_dump/prep/rawdata_collected.json')
+        >>> prep.load_spm(
+        ...     savepath='./data/_tmp_dump/spmed',
+        ...     model_name='spm_trained',
+        ...     use_bos=False,
+        ...     use_eos=False,
+        ...     vocab_min_freq_threshold=None,
+        ... )
+
+        """
 
         if model_name is None:
             if self.SPM_MODEL_NAME is None:
@@ -481,7 +775,48 @@ class Preprocessor(object):
             type='piece',  # {'id', 'piece'}
             rm_space=True,
             ):
+        """
+        A high-level wrapper for
+        `sentencepiece.EncodeAsPieces` or `sentencepiece.EncodeAsIds`.
 
+        Parameters
+        ----------
+        input_list: list
+            A list of sentences to tokenize.
+
+        type: str (default: `'piece'`, `{'piece', 'id'}`)
+            Choose encoding type. `'piece': str, 'id': int`
+
+        rm_space: bool (default: `True`)
+            An option to remove `"▁"` (U+2581), which represents the whitespace.
+
+        Example
+        -------
+
+        >>> import unipy_nlp.preprocessor as uprc
+        >>> prep = uprc.Preprocessor()
+        >>> prep.read_json('./data/_tmp_dump/prep/rawdata_collected.json')
+        >>> prep.load_spm(
+        ...     savepath='./data/_tmp_dump/spmed',
+        ...     model_name='spm_trained',
+        ...     use_bos=False,
+        ...     use_eos=False,
+        ...     vocab_min_freq_threshold=None,
+        ... )
+        >>> sentence_for_spm_list = [
+        ...     "새로운 기술환경의 발전과 확산이 진행되는 it환경",
+        ...     "비즈니스 환경과의 접목에 집중해 새로운 사업영역 선점",
+        ... ]
+        >>> tokenized_spmed = prep.spm_encode(
+        ...     sentence_for_spm_list,
+        ...     type='piece',
+        ...     rm_space=True,
+        ... )
+        >>> pprint(tokenized_spmed)
+        [['새로운', '기술', '환경의', '발전과', '확산이', '진행되는', 'it', '환경'],
+        ['비즈니스', '환경', '과의', '접목', '에', '집중', '해', '새로운', '사업영역', '선점'],
+
+        """
         spm_model = self.spm_model
         if type == 'piece':
             spmed = [

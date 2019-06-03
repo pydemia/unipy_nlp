@@ -212,10 +212,11 @@ def pick_best_topics(
 
 
 def get_saliency(tinfo_df):
-    """Calculate Saliency for terms within a topic.
+    r"""Calculate Saliency for terms within a topic.
 
-    $$ distinctiveness(w) = \sum P(t \vert w) log\frac{P(t \vert w)}{P(w)} $$
-    $$ saliency(w) = P(w) \times distinctiveness(w) $$
+    .. math::
+        distinctiveness(w) = \sum P(t \vert w) log\frac{P(t \vert w)}{P(w)}
+        saliency(w) = P(w) \times distinctiveness(w)
     <div align="right">(Chuang, J., 2012. Termite: Visualization techniques for assessing textual topic models)</div>
 
     Parameters
@@ -224,6 +225,10 @@ def get_saliency(tinfo_df):
         `pyLDAvis.gensim.prepare`.to_dict()['tinfo'] containing
         ['Category', 'Freq', 'Term', 'Total', 'loglift', 'logprob']
 
+    Return
+    ------
+    saliency: float
+
     """
 
     saliency = tinfo_df['Freq'] / tinfo_df['Total']
@@ -231,11 +236,12 @@ def get_saliency(tinfo_df):
     return saliency
 
 
-def get_relevance(tinfo_df, l=.6):
-    """Calculate Relevances with a given lambda value.
+def get_relevance(tinfo_df, lambda_val=.6):
+    r"""Calculate Relevances with a given lambda value.
 
-    # $$ relevance(t,w) = \lambda \cdot P(w \vert t) + (1 - \lambda) \cdot \frac{P(w \vert t)}{P(w)} $$
-    <div align="center"> Recommended $\lambda = 0.6$ </div>
+    .. math::
+        relevance(t,w) = \lambda \cdot P(w \vert t) + (1 - \lambda) \cdot \frac{P(w \vert t)}{P(w)}
+        Recommended \lambda = 0.6
     <div align="right">(Sievert, C., 2014. LDAvis: A method for visualizing and interpreting topics)</div>
 
     Parameters
@@ -244,8 +250,12 @@ def get_relevance(tinfo_df, l=.6):
         `pyLDAvis.gensim.prepare`.to_dict()['tinfo'] containing
         ['Category', 'Freq', 'Term', 'Total', 'loglift', 'logprob']
 
-    l: float
+    lambda_val: float
         lambda_ratio between {0-1}. default is .6 (recommended from its paper)
+
+    Return
+    ------
+    relevance: float
 
     """
 
@@ -304,8 +314,9 @@ def get_terminfo_table(
         doc_topic_dists=None,
         use_gensim_prepared=True,
         top_n=10,
-        workers_n=2,
+        workers_n=-1,
         r_normalized=False,
+        relevence_lambda_val=.6,
         random_seed=1,
         ):
 
@@ -334,7 +345,10 @@ def get_terminfo_table(
             np.exp(tinfo_df['logprob']) / np.exp(tinfo_df['loglift'])
         )
         tinfo_df['saliency'] = get_saliency(tinfo_df)
-        tinfo_df['relevance'] = get_relevance(tinfo_df)
+        tinfo_df['relevance'] = get_relevance(
+            tinfo_df,
+            lambda_val=relevence_lambda_val,
+        )
 
         tinfo_df['term_prob'] = np.exp(tinfo_df['logprob'])
         tinfo_df['term_r_prob'] = np.exp(tinfo_df['relevance'])
@@ -398,7 +412,7 @@ def get_terminfo_table(
                 bow_chunk,
                 score_df=r_score_df,
                 colname=r_colname,
-        ):
+                ):
 
             bow_chunk_arr = np.array(bow_chunk)
             word_id_arr = bow_chunk_arr[:, 0]
@@ -514,7 +528,182 @@ def get_terminfo_table(
 
 
 class TopicModeler(object):
+    """Topic Modeling via LDA(Latent Diriclet Allocation).
 
+    Get tokenized from text.
+
+    Parameters
+    ----------
+
+    sentence_list: list
+        A list of raw sentences.
+
+    tokenized_sentence_list: list
+        A nested list of tokenized sentences.
+
+    Attributes
+    ----------
+
+    After `__init__`:
+        self.sentences:
+            A list of raw sentences.
+        self.tokenized: list
+            A nested list of tokenized sentences.
+
+        self.corpora_dict: `gensim.corpora.dictionary.Dictionary`
+            A token dictionary from a given text.
+
+        self.bow_corpus_idx: list
+            A nested list, which contains converted documents into a list of token indices.
+
+        self.bow_corpus_doc: list
+            A nested list, which contains converted documents into a list of token words.
+
+    After `train_lda` or `load_lda`:
+        self.best_lda_model: dict
+            A dict contains the best model & its coherence value.
+            `{'coherence': int, 'model':gensim.models.ldamulticore.LdaMulticore}`
+
+        self.lda_model_list = model_coh_list
+            A nested list of `[topic_num, model, coherence_value]`
+
+        self.lda_model_dict:
+            A nested dict as `{topic_num: {'coherence': int, 'model': `gensim.models.ldamulticore.LdaMulticore`}}`
+
+        self.trained: bool
+            `True` If trained or properly loaded.
+
+    After `visualize_lda_to_html`:
+        self.selected_topic_num: int
+            A int of selected topic number.
+
+        self.selected_model: `gensim.models.ldamulticore.LdaMulticore`
+
+        self.vis_prepared: `pyLDAvis.prepared_data.PreparedData`
+
+        self.total_terms_df
+            `tinfo_table`, `'Default'` removed. 
+
+        self.top_relevant_terms_df: `pandas.DataFrame`
+            A rank table of `Category`.
+
+        self.r_adj_score_df: `pandas.DataFrame`
+            A tinfo table, considering saliency and relevence score.
+
+        self.bow_score_list: list
+            Scores of each sentence, based on bow_corpus, clipped by (0, 3).
+
+    After `estimate_topics_by_documents` or `load_estimated`:
+        self.dominant_topic_estimation_df: `pandas.DataFrame`
+            A dataframe contains `['lda_prob', 'dominant_topic', 'contribution', 'topic_keywords']`
+        
+        self.topic_freq_df: `pandas.DataFrame`
+            A rank table by topic frequency.
+
+    After `get_representitive_documents` or `load_representitive_documents`:
+        self.representitive_docs: `pandas.DataFrame`
+
+    After `get_representitive_candidates`:
+        return `repr_sentences, repr_bow_corpus_doc, repr_bow_corpus_idx`
+
+
+    Methods
+    -------
+
+    train_lda
+
+    save_lda
+
+    load_lda
+
+    pick_best_lda_topics
+
+    visualize_lda_to_html
+
+    estimate_topics_by_documents
+
+    get_representitive_documents
+
+    See Also
+    --------
+    Preprocessing
+        ``unipy_nlp.preprocessor.Preprocessor``
+
+    POS-Tagging
+        ``konlpy.tag.Mecab``
+
+    Byte-Pair Encoding
+        ``sentencepiece``
+
+    Examples
+    --------
+
+    >>> import unipy_nlp.data_collector as udcl
+    >>> import unipy_nlp.preprocessor as uprc
+    >>> from pprint import pprint
+    >>> prep = uprc.Preprocessor()
+    >>> prep.read_json('./data/_tmp_dump/prep/rawdata_collected.json')
+    >>> sentence_for_pos_list = [
+    ...     "무궁화 꽃이 피었습니다."
+    ...     "우리는 민족중흥의 역사적 사명을 띠고 이 땅에 태어났다.",
+    ... ]
+    >>> tokenized = prep.pos_tag(
+    ...     input_text=sentence_for_pos_list,
+    ...     tag_type=[
+    ...         '체언 접두사', '명사', '한자', '외국어',
+    ...         '수사', '구분자',
+    ...         '동사',
+    ...         '부정 지정사', '긍정 지정사',
+    ...     ]
+    ... )
+    >>> print(tokenized)
+    [['무궁화'], ['우리', '민족중흥', '역사', '사명']]
+    >>> tpm = utpm.TopicModeler(sentence_list, tokenized)
+    >>> tpm.train_lda(
+    ...     num_topic=5,
+    ...     workers_n=8,
+    ...     random_seed=1,
+    ... )
+    >>> tpm.save_lda(savepath='data/_tmp_dump/topic_modeling', affix='lda')
+    >>> tpm.load_lda('data/_tmp_dump/topic_modeling')
+    >>> tpm.pick_best_lda_topics(
+    ...     num_topic_list=[5, 7, 10],
+    ...     workers_n=8,
+    ...     random_seed=1,
+    ... )
+    >>> tpm.visualize_lda_to_html(
+    ...     7,
+    ...     top_n=10,
+    ...     r_normalized=False,
+    ...     relevence_lambda_val=.6,
+    ...     workers_n=8,
+    ...     random_seed=1,
+    ...     savepath='data/_tmp_dump/topic_modeling',
+    ...     filename_affix='lda',
+    ...     # save_type='html',  # {'html', 'json'}
+    ...     save_relevent_terms_ok=True,
+    ...     save_html_ok=True,
+    ...     display_ok=False,
+    ... )
+
+    >>> sentence_labeled = tpm.estimate_topics_by_documents(
+    ...     7,
+    ...     # sentence_list=tokenized,
+    ...     random_seed=1,
+    ...     save_ok=True,
+    ...     savepath='data/_tmp_dump/topic_modeling',
+    ...     filename_affix='lda',
+    ... )
+    >>> sentence_repr = tpm.get_representitive_documents(
+    ...     7,
+    ...     len_range=(10, 30),
+    ...     top_n=10,
+    ...     save_ok=True,
+    ...     savepath='data/_tmp_dump/topic_modeling',
+    ...     filename_affix='lda',
+    ... )
+
+    """
     def __init__(
             self,
             sentence_list,
@@ -550,7 +739,36 @@ class TopicModeler(object):
             workers_n=2,
             random_seed=1,
             ):
+        """
+        Train a single LDA Topic Model.
 
+        Parameters
+        ----------
+
+        num_topics: int (default: 5)
+            A number of topics.
+        
+        lda_type: str (default: `'default'`, `{'default', 'hdp', 'mallet'}`)
+            A type of LDA model.
+            Use `'default'` for now. Other options are working in progress.
+
+        workers_n: int (default: 2)
+            A number of CPU core to train.
+        
+        random_seed: int (default: 1)
+            A random seed int.
+
+        Example
+        -------
+
+        >>> tpm = utpm.TopicModeler(sentence_list, tokenized)
+        >>> tpm.train_lda(
+        ...     num_topic=5,
+        ...     workers_n=8,
+        ...     random_seed=1,
+        ... )
+
+        """
         self.pick_best_lda_topics(
             num_topic_list=[num_topic],
             lda_type=lda_type,
@@ -566,6 +784,36 @@ class TopicModeler(object):
             workers_n=2,
             random_seed=1,
             ):
+        """
+        Train multiple LDA Topic Models by given topic numbers.
+
+        Parameters
+        ----------
+
+        num_topic_list: list (default: `[5, 7, 10, 12, 15, 17, 20]`)
+            A list of topic numbers.
+        
+        lda_type: str (default: `'default'`, `{'default', 'hdp', 'mallet'}`)
+            A type of LDA model.
+            Use `'default'` for now. Other options are working in progress.
+
+        workers_n: int (default: 2)
+            A number of CPU core to train.
+        
+        random_seed: int (default: 1)
+            A random seed int.
+
+        Example
+        -------
+
+        >>> tpm = utpm.TopicModeler(sentence_list, tokenized)
+        >>> tpm.pick_best_lda_topics(
+        ...     num_topic=5,
+        ...     workers_n=8,
+        ...     random_seed=1,
+        ... )
+
+        """
 
         (best_lda_model, model_coh_list,
          model_dict, coh_list) = pick_best_topics(
@@ -585,7 +833,30 @@ class TopicModeler(object):
         self.trained = True
 
     def save_lda(self, savepath='./', affix='lda'):
+        """
+        Save trained lda model(s).
 
+        Parameters
+        ----------
+
+        savepath: str (default: `'./'`)
+            A dirpath to save.
+        
+        affix: str (default: `'lda'`)
+            An affix of filename. Its ext will be `.ldamodel`.
+
+        Example
+        -------
+
+        >>> tpm = utpm.TopicModeler(sentence_list, tokenized)
+        >>> tpm.pick_best_lda_topics(
+        ...     num_topic=5,
+        ...     workers_n=8,
+        ...     random_seed=1,
+        ... )
+        >>> tpm.save_lda(savepath='data/_tmp_dump/topic_modeling', affix='lda')
+
+        """
         os.makedirs(savepath, exist_ok=True)
 
         corpora_filename = os.path.join(
@@ -616,7 +887,22 @@ class TopicModeler(object):
             _model.save(_filename)
 
     def load_lda(self, filepath):
+        """
+        Load trained lda model(s).
 
+        Parameters
+        ----------
+
+        filepath: str 
+            A dirpath to load. It contains `.ldamodel`.
+
+        Example
+        -------
+
+        >>> tpm = utpm.TopicModeler(sentence_list, tokenized)
+        >>> tpm.load_lda('data/_tmp_dump/topic_modeling')
+
+        """
         if os.path.isfile(filepath):
 
             self.lda_model_list = []
@@ -628,10 +914,12 @@ class TopicModeler(object):
                 r'^(.+)_topics\-(\d+)_coh\-([-+]?\d*\.\d+|\d+)\.ldamodel',
                 model_name_str,
             )[0]
+
+            _topic_num, _coh_val = int(_topic_num), int(_coh_val)
             _model = gensim.models.LdaMulticore.load(filepath)
-            self.lda_model_list = [(int(_topic_num), _model, _coh_val)]
+            self.lda_model_list = [(_topic_num, _model, _coh_val)]
             self.lda_model_dict.__setitem__(
-                int(_topic_num),
+                _topic_num,
                 {'model': _model, 'coherence': _coh_val},
             )
 
@@ -642,6 +930,7 @@ class TopicModeler(object):
             self.corpora_dict = gensim.corpora.Dictionary.load_from_text(
                 corpora_filename,
             )
+            self.best_lda_model = self.lda_model_dict[_topic_num]
             print(f'Model loaded: topics={_topic_num}, coh={_coh_val}')
 
         elif os.path.isdir(filepath):
@@ -658,10 +947,11 @@ class TopicModeler(object):
                     r'^(.+)_topics\-(\d+)_coh\-([-+]?\d*\.\d+|\d+).ldamodel',
                     model_name_str,
                 )[0]
+                _topic_num, _coh_val = int(_topic_num), int(_coh_val)
                 _model = gensim.models.LdaMulticore.load(filename)
-                self.lda_model_list += [(int(_topic_num), _model, _coh_val)]
+                self.lda_model_list += [(_topic_num, _model, _coh_val)]
                 self.lda_model_dict.__setitem__(
-                    int(_topic_num),
+                    _topic_num,
                     {'model': _model, 'coherence': _coh_val},
                 )
                 print(f'Model loaded: topics={_topic_num}, coh={_coh_val}')
@@ -673,6 +963,11 @@ class TopicModeler(object):
             self.corpora_dict = gensim.corpora.Dictionary.load_from_text(
                 corpora_filename,
             )
+            best_topic_num, best_model, best_coh_val = max(
+                self.lda_model_list,
+                key=lambda x: x[-1],
+            )
+            self.best_lda_model = self.lda_model_dict[int(best_topic_num)]
 
         self.trained = True
 
@@ -684,6 +979,7 @@ class TopicModeler(object):
             target_topic_num,
             top_n=10,
             r_normalized=False,
+            relevence_lambda_val=.6,
             workers_n=2,
             random_seed=1,
             savepath='./',
@@ -693,7 +989,78 @@ class TopicModeler(object):
             save_html_ok=True,
             display_ok=False,
             ):
+        """
+        Run `pyLDAvis.prepare` & get adjusted scores(use saliency & relevence) of terms by each topic.
 
+        Parameters
+        ----------
+
+        target_topic_num: int
+            A topic number of LDA model to visualize.
+
+        top_n: int (default: `10`)
+            A number of the most relevent terms in a topic.
+
+        r_normalized: bool (default: `False`)
+            Use normalized probabilities when it is `True`. (not recommended in most cases.)
+
+        relevence_lambda_val: float (defautl: `.6`).
+            A lambda value(ratio) to calculate relevence.
+
+        workers_n: int (default: `2`)
+            A number of CPU cores to calculate(`pyLDAvis.prepare`)
+
+        random_seed: int (default: `1`)
+            A random seed number.
+
+        savepath: str (default: `'./'`)
+            A dirpath to save `pyLDAvis` or other `pandas.DataFrame`s.
+
+        filename_affix: str (default: `'lda'`)
+            An affix of filename to save `pyLDAvis` html or json.
+
+        save_relevent_terms_ok: bool (default: `True`)
+            An option to save `pandas.DataFrame` of `top_relevent_terms`.
+
+        save_html_ok: bool (default: `True`)
+            An option to save html.
+
+        display_ok: bool (default: `False`)
+            Call `pyLDAvis.display` when it is `True`.
+
+        References
+        ----------
+
+        Saliency: 
+            `Chuang, J., 2012. Termite: Visualization techniques for assessing textual topic models`
+
+        Relevence:
+            `Sievert, C., 2014. LDAvis: A method for visualizing and interpreting topics`
+
+        Example
+        -------
+
+        >>> tpm = utpm.TopicModeler(sentence_list, tokenized)
+        >>> tpm.pick_best_lda_topics(
+        ...     num_topic=5,
+        ...     workers_n=8,
+        ...     random_seed=1,
+        ... )
+        >>> tpm.visualize_lda_to_html(
+        ...     7,
+        ...     top_n=10,
+        ...     r_normalized=False,
+        ...     relevence_lambda_val=.6,
+        ...     workers_n=8,
+        ...     random_seed=1,
+        ...     savepath='data/_tmp_dump/topic_modeling',
+        ...     filename_affix='lda',
+        ...     save_relevent_terms_ok=True,
+        ...     save_html_ok=True,
+        ...     display_ok=False,
+        ... )
+
+        """
         if target_topic_num in self.lda_model_dict.keys():
             self.selected_topic_num = target_topic_num
             self.selected_model = (
@@ -714,6 +1081,7 @@ class TopicModeler(object):
             use_gensim_prepared=True,
             top_n=top_n,
             r_normalized=r_normalized,
+            relevence_lambda_val=relevence_lambda_val,
             workers_n=workers_n,
             random_seed=random_seed,
         )
@@ -766,7 +1134,53 @@ class TopicModeler(object):
             savepath='./',
             filename_affix='lda',
             ):
-        """Get dominant topics & its contribution scores from each documents.
+        """
+        Get dominant topics & its contribution scores from each documents.
+
+        Parameters
+        ----------
+
+        target_topic_num: int
+            A topic number of LDA model to use.
+
+        random_seed: int (default: `1`)
+            A random seed number.
+
+        save_ok: bool (default: `True`)
+            Save return `pandas.DataFrame`.
+
+        savepath: str (default: `'./'`)
+            A dirpath to save the topic-labeled sentences.
+
+        filename_affix: str (default: `'lda'`)
+            An affix of filename to save the topic-labeled sentences.
+
+        Return
+        ------
+
+        dominant_topic_estimation_df: `pandas.DataFrame`
+            Topic-labeled given(trained) sentences.
+        
+        topic_freq_df: `pandas.DataFrame`
+            A rank table of topics by frequency.
+
+        Example
+        -------
+
+        >>> tpm = utpm.TopicModeler(sentence_list, tokenized)
+        >>> tpm.pick_best_lda_topics(
+        ...     num_topic=5,
+        ...     workers_n=8,
+        ...     random_seed=1,
+        ... )
+        >>> sentence_labeled = tpm.estimate_topics_by_documents(
+        ...     7,
+        ...     random_seed=1,
+        ...     save_ok=True,
+        ...     savepath='data/_tmp_dump/topic_modeling',
+        ...     filename_affix='lda',
+        ... )
+
         """
 
         if target_topic_num != self.selected_topic_num:
@@ -898,7 +1312,53 @@ class TopicModeler(object):
             savepath='./',
             filename_affix='lda'
             ):
+        """
+        Load the result of `self.estimate_topics_by_documents`.
 
+        Parameters
+        ----------
+
+        target_topic_num: int
+            A topic number of LDA model to use.
+
+        savepath: str (default: `'./'`)
+            A dirpath to load the topic-labeled sentences.
+
+        filename_affix: str (default: `'lda'`)
+            An affix of filename to load the topic-labeled sentences.
+
+        Return
+        ------
+
+        dominant_topic_estimation_df: `pandas.DataFrame`
+            Topic-labeled given(trained) sentences.
+        
+        topic_freq_df: `pandas.DataFrame`
+            A rank table of topics by frequency.
+
+        Example
+        -------
+
+        >>> tpm = utpm.TopicModeler(sentence_list, tokenized)
+        >>> tpm.pick_best_lda_topics(
+        ...     num_topic=5,
+        ...     workers_n=8,
+        ...     random_seed=1,
+        ... )
+        >>> sentence_labeled = tpm.estimate_topics_by_documents(
+        ...     7,
+        ...     random_seed=1,
+        ...     save_ok=True,
+        ...     savepath='data/_tmp_dump/topic_modeling',
+        ...     filename_affix='lda',
+        ... )
+        >>> sentence_labeled, topic_freq = tpm.load_estimated(
+        ...     target_topic_num=7,
+        ...     savepath='data/_tmp_dump/topic_modeling',
+        ...     filename_affix='lda',
+        ... )
+
+        """
         filename_str = os.path.join(
             savepath,
             '_'.join([
@@ -930,7 +1390,50 @@ class TopicModeler(object):
             self,
             len_range=(10, 30),
             ):
+        """
+        Get representitive candidates by length. It is for to use `unipy_nlp.network_plot`.
 
+        Parameters
+        ----------
+
+        len_range: `list` or `tuple` (default: `(10, 30)`)
+            A candidate threshold by length.
+
+        Return
+        ------
+
+        repr_sentences: `list`
+            A list of sentences.
+        
+        repr_bow_corpus_doc: `list`
+            A nested list, which contains converted documents into a list of token words.
+        
+        repr_bow_corpus_idx: `list`
+            A nested list, which contains converted documents into a list of token indices..
+
+        Example
+        -------
+
+        >>> tpm = utpm.TopicModeler(sentence_list, tokenized)
+        >>> tpm.pick_best_lda_topics(
+        ...     num_topic=5,
+        ...     workers_n=8,
+        ...     random_seed=1,
+        ... )
+        >>> sentence_labeled = tpm.estimate_topics_by_documents(
+        ...     7,
+        ...     random_seed=1,
+        ...     save_ok=True,
+        ...     savepath='data/_tmp_dump/topic_modeling',
+        ...     filename_affix='lda',
+        ... )
+        >>> (repr_sentenced,
+        >>>  repr_bow_corpus_doc,
+        >>>  repr_bow_corpus_idx) = tpm.get_representitive_candidates(
+        ...     len_range=(12, 30),
+        ... )
+
+        """
         len_min, len_max = len_range
         bool_mask = mask_to_filter_document_by_len = list(
             map(lambda x: len_min <= len(x) < len_max, self.sentences)
@@ -971,7 +1474,62 @@ class TopicModeler(object):
             savepath='./',
             filename_affix='lda',
             ):
+        """
+        List-up the most representitive documents by topic.
 
+        Parameters
+        ----------
+
+        target_topic_num: int
+            A topic number of LDA model to use.
+
+        len_range: `list` or `tuple` (default: `(10, 30)`)
+            A candidate threshold by length.
+
+        top_n: int (default: `10`)
+            A document number to list-up, by topic.
+
+        save_ok: bool (default: `True`)
+            An option to save.
+
+        savepath: str (default: `'./'`)
+            A dirpath to load the topic-labeled sentences.
+
+        filename_affix: str (default: `'lda'`)
+            An affix of filename to load the topic-labeled sentences.
+
+        Return
+        ------
+
+        reordered: `pandas.DataFrame`
+            Representitive documents, group by topic, ordery by its rank.
+
+        Example
+        -------
+
+        >>> tpm = utpm.TopicModeler(sentence_list, tokenized)
+        >>> tpm.pick_best_lda_topics(
+        ...     num_topic=5,
+        ...     workers_n=8,
+        ...     random_seed=1,
+        ... )
+        >>> sentence_labeled = tpm.estimate_topics_by_documents(
+        ...     7,
+        ...     random_seed=1,
+        ...     save_ok=True,
+        ...     savepath='data/_tmp_dump/topic_modeling',
+        ...     filename_affix='lda',
+        ... )
+        >>> sentence_repr = tpm.get_representitive_documents(
+        ...     7,
+        ...     len_range=(10, 30),
+        ...     top_n=10,
+        ...     save_ok=True,
+        ...     savepath='data/_tmp_dump/topic_modeling',
+        ...     filename_affix='lda',
+        ... )
+
+        """
         if target_topic_num != self.selected_topic_num:
             raise ValueError(
                 'You should run `visualize_lda_to_html` first.'
@@ -1031,7 +1589,57 @@ class TopicModeler(object):
             savepath='./',
             filename_affix='lda',
             ):
+        """
+        Load the result of `self.get_representitive_documents`.
+
+        Parameters
+        ----------
+
+        target_topic_num: int
+            A topic number of LDA model to use.
+
+        top_n: int (default: `10`)
+            A document number to list-up, by topic.
+            The upper bound depends on how many documents saved.
+
+        savepath: str (default: `'./'`)
+            A dirpath to load the topic-labeled sentences.
+
+        filename_affix: str (default: `'lda'`)
+            An affix of filename to load the topic-labeled sentences.
+
+        Return
+        ------
+
+        dominant_topic_estimation_df: `pandas.DataFrame`
+            Topic-labeled given(trained) sentences.
         
+        topic_freq_df: `pandas.DataFrame`
+            A rank table of topics by frequency.
+
+        Example
+        -------
+
+        >>> tpm = utpm.TopicModeler(sentence_list, tokenized)
+        >>> tpm.pick_best_lda_topics(
+        ...     num_topic=5,
+        ...     workers_n=8,
+        ...     random_seed=1,
+        ... )
+        >>> sentence_labeled = tpm.estimate_topics_by_documents(
+        ...     7,
+        ...     random_seed=1,
+        ...     save_ok=True,
+        ...     savepath='data/_tmp_dump/topic_modeling',
+        ...     filename_affix='lda',
+        ... )
+        >>> sentence_labeled, topic_freq = tpm.load_estimated(
+        ...     target_topic_num=7,
+        ...     savepath='data/_tmp_dump/topic_modeling',
+        ...     filename_affix='lda',
+        ... )
+
+        """
         filename_str = os.path.join(
             savepath,
             '_'.join([

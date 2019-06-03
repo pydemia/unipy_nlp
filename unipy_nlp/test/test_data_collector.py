@@ -96,14 +96,14 @@ importlib.reload(udcl)
 # _tmp_df['contents'].apply(len).hist()
 
 # %% ALL IN ONE
-
+importlib.reload(udcl)
 _tmp_df, _tmp_filename = udcl.collect_data(
-    './data',
-    dumppath='./data/_tmp_dump/prep',
+    filepath='./data/saveasnew',
+    dump_filepath='./data/_tmp_dump/prep/rawdata_collected.json',
     dump_json_ok=True,
     return_tuple=True,
 )
 
 
-
+_tmp_df
 #%%

@@ -174,6 +174,96 @@ def token_pair_extractor(token_ls):
 # %% Graph
 
 class WordNetwork(object):
+    """A network plot of co-occurance of words.
+
+    Parameters
+    ----------
+
+    topic_freq_df: list
+        A rank table by topic frequency.
+
+    top_relevant_terms_df: list
+        A rank table of `Category`.
+
+    Attributes
+    ----------
+    pyvis_net: `pyvis.network.Network`
+
+    ngramed_list: `list`
+
+    ngramed_df: `pandas.DataFrame`
+
+    Methods
+    -------
+
+    get_ngram
+
+    save_ngram
+
+    load_ngram
+
+    draw
+
+    get_topic_mutuality_score_dict
+
+    get_network_scored_repr_docs
+
+
+    See Also
+    --------
+
+    Preprocessing
+        ``unipy_nlp.preprocessor.Preprocessor``
+    
+    Topic Modeling
+        ``unipy_nlp.topic_modeler.Topic_modeler``
+
+    POS-Tagging
+        ``konlpy.tag.Mecab``
+
+    Byte-Pair Encoding
+        ``sentencepiece``
+
+    Examples
+    --------
+
+    >>> import unipy_nlp.data_collector as udcl
+    >>> import unipy_nlp.preprocessor as uprc
+    >>> import unipy_nlp.network_plot as unet
+    >>> tpm = utpm.TopicModeler(sentence_list, tokenized)
+    >>> tpm.train_lda(...)
+    >>> tpm.visualize_lda_to_html(...)
+    >>> vnet = unet.WordNetwork(
+    ...     topic_freq_df=tpm.topic_freq_df,
+    ...     top_relevant_terms_df=tpm.top_relevant_terms_df,
+    ... )
+    >>> vnet.get_ngram(tokenized)
+    >>> vnet.save_ngram('data/_tmp_dump/network_plot/ngram.json', type='json')
+    >>> vnet.save_ngram('data/_tmp_dump/network_plot/ngram.csv', type='csv')
+    >>> vnet.load_ngram('data/_tmp_dump/network_plot/ngram.json', type='json')
+    >>> vnet.load_ngram('data/_tmp_dump/network_plot/ngram.csv', type='csv')
+    >>> vnet.draw(
+    ...     height="100%",
+    ...     width='800px',
+    ...     bgcolor='#ffffff',
+    ...     font_color='black',
+    ...     directed=True,
+    ...     topic_top_n=5,
+    ...     node_freq_threshold=100,
+    ...     show_buttons=True,
+    ... )
+    >>> (score_dict,
+    ... score_dict_indiced) = vnet.get_topic_mutuality_score_dict(
+    ...     cdict=tpm.corpora_dict
+    ... )
+    >>> core_repr = vnet.get_network_scored_repr_docs(
+    ...     bow_corpus=repr_bow_corpus_doc,
+    ...     repr_docs=repr_sentenced,
+    ...     save_ok=True,
+    ...     savepath=None,
+    ... )
+
+    """
     def __init__(
             self,
             topic_freq_df,
@@ -192,6 +282,31 @@ class WordNetwork(object):
 
 
     def get_ngram(self, tokenized_sentence_list):
+        """
+        Get N-grams for nodes & edges.
+
+        Parameters
+        ----------
+
+        tokenized_sentence_list: list
+            A list of tokenized documents.
+
+        Examples
+        --------
+
+        >>> import unipy_nlp.data_collector as udcl
+        >>> import unipy_nlp.preprocessor as uprc
+        >>> import unipy_nlp.network_plot as unet
+        >>> tpm = utpm.TopicModeler(sentence_list, tokenized)
+        >>> tpm.train_lda(...)
+        >>> tpm.visualize_lda_to_html(...)
+        >>> vnet = unet.WordNetwork(
+        ...     topic_freq_df=tpm.topic_freq_df,
+        ...     top_relevant_terms_df=tpm.top_relevant_terms_df,
+        ... )
+        >>> vnet.get_ngram(tokenized)
+
+        """
         ngramed = token_pair_extractor(tokenized_sentence_list)
         ngramed_df = pd.DataFrame(
             ngramed,
@@ -204,6 +319,35 @@ class WordNetwork(object):
         return ngramed_df
 
     def save_ngram(self, filepath, type='json'):
+        """
+        Save N-grams.
+
+        Parameters
+        ----------
+
+        filepath: str
+            A filepath to save.
+
+        type: str (default: `'json'`, `{'json', 'csv'}`)
+            Choose file type.
+
+        Examples
+        --------
+
+        >>> import unipy_nlp.data_collector as udcl
+        >>> import unipy_nlp.preprocessor as uprc
+        >>> import unipy_nlp.network_plot as unet
+        >>> tpm = utpm.TopicModeler(sentence_list, tokenized)
+        >>> tpm.train_lda(...)
+        >>> tpm.visualize_lda_to_html(...)
+        >>> vnet = unet.WordNetwork(
+        ...     topic_freq_df=tpm.topic_freq_df,
+        ...     top_relevant_terms_df=tpm.top_relevant_terms_df,
+        ... )
+        >>> vnet.get_ngram(tokenized)
+        >>> vnet.save_ngram('data/_tmp_dump/network_plot/ngram.json', type='json')
+
+        """
         dirpath, filename = os.path.split(filepath)
         os.makedirs(dirpath, exist_ok=True)
         if type == 'json':
@@ -221,6 +365,36 @@ class WordNetwork(object):
             raise Exception("'type' should be 'json' or 'csv'.")
 
     def load_ngram(self, filename, type='json'):
+        """
+        Load N-grams.
+
+        Parameters
+        ----------
+
+        filepath: str
+            A filepath to save.
+
+        type: str (default: `'json'`, `{'json', 'csv'}`)
+            Choose file type.
+
+        Examples
+        --------
+
+        >>> import unipy_nlp.data_collector as udcl
+        >>> import unipy_nlp.preprocessor as uprc
+        >>> import unipy_nlp.network_plot as unet
+        >>> tpm = utpm.TopicModeler(sentence_list, tokenized)
+        >>> tpm.train_lda(...)
+        >>> tpm.visualize_lda_to_html(...)
+        >>> vnet = unet.WordNetwork(
+        ...     topic_freq_df=tpm.topic_freq_df,
+        ...     top_relevant_terms_df=tpm.top_relevant_terms_df,
+        ... )
+        >>> vnet.get_ngram(tokenized)
+        >>> vnet.save_ngram('data/_tmp_dump/network_plot/ngram.json', type='json')
+        >>> vnet.load_ngram('data/_tmp_dump/network_plot/ngram.json', type='json')
+
+        """
         if type == 'json':
             with open(filename, 'r') as jfile:
                 self.ngramed_list = json.load(jfile)
@@ -522,8 +696,65 @@ class WordNetwork(object):
             node_freq_threshold=None,
             show_buttons=True,
             ):
+        """
+        Draw `pyvis.network.Network` using N-grams.
 
+        Parameters
+        ----------
+        height: str (default: `"700px"`)
+            Height of the network plot. It can be pixel-based or percentage-based.
+        
+         width: str (default: `"800px"`)
+            Height of the network plot. It can be pixel-based or percentage-based.
+        
+        bgcolor: str (default: `'#ffffff'`)
+            HEX color for background.
+        
+        font_color: str (default: `'black'`)
+            HEX color or colorname for font.
+        
+        directed: bool (default: `True`)
+            An option to show direction for each edges.
+        
+        notebook: bool (default: `False`)
+            An option to show in jupyter notebook
+        
+        topic_top_n: int (default: `None`)
+            A topic number to show. It depends on its frequency.
+        
+        node_freq_threshold: int (default: `None`)
+            A threshold number to show nodes.
+            It is useful when your nodes & edges are too many to show.
+            
+        show_buttons: bool (default: `True`)
+            An option to show interactive buttons in html.
 
+        Example
+        -------
+
+        >>> import unipy_nlp.data_collector as udcl
+        >>> import unipy_nlp.preprocessor as uprc
+        >>> import unipy_nlp.network_plot as unet
+        >>> tpm = utpm.TopicModeler(sentence_list, tokenized)
+        >>> tpm.train_lda(...)
+        >>> tpm.visualize_lda_to_html(...)
+        >>> vnet = unet.WordNetwork(
+        ...     topic_freq_df=tpm.topic_freq_df,
+        ...     top_relevant_terms_df=tpm.top_relevant_terms_df,
+        ... )
+        >>> vnet.get_ngram(tokenized)
+        >>> vnet.draw(
+        ...     height="100%",
+        ...     width='800px',
+        ...     bgcolor='#ffffff',
+        ...     font_color='black',
+        ...     directed=True,
+        ...     topic_top_n=5,
+        ...     node_freq_threshold=100,
+        ...     show_buttons=True,
+        ... )
+
+        """
         self._get_linked()
         self._set_terminfo()
         self._set_colormap(cmap='tab10')
@@ -757,6 +988,45 @@ class WordNetwork(object):
 
 
     def save(self, filepath_html):
+        """
+        Save `pyvis.network.Network`.
+
+        Parameters
+        ----------
+
+        filepath_html: str
+            A filepath to save.
+
+        Examples
+        --------
+
+        Example
+        -------
+
+        >>> import unipy_nlp.data_collector as udcl
+        >>> import unipy_nlp.preprocessor as uprc
+        >>> import unipy_nlp.network_plot as unet
+        >>> tpm = utpm.TopicModeler(sentence_list, tokenized)
+        >>> tpm.train_lda(...)
+        >>> tpm.visualize_lda_to_html(...)
+        >>> vnet = unet.WordNetwork(
+        ...     topic_freq_df=tpm.topic_freq_df,
+        ...     top_relevant_terms_df=tpm.top_relevant_terms_df,
+        ... )
+        >>> vnet.get_ngram(tokenized)
+        >>> vnet.draw(
+        ...     height="100%",
+        ...     width='800px',
+        ...     bgcolor='#ffffff',
+        ...     font_color='black',
+        ...     directed=True,
+        ...     topic_top_n=5,
+        ...     node_freq_threshold=100,
+        ...     show_buttons=True,
+        ... )
+        >>> vnet.save('data/_tmp_dump/network_plot/vnet.html')
+
+        """
         dirpath, filename = os.path.split(filepath_html)
         os.makedirs(dirpath, exist_ok=True)
         self.pyvis_net.save_graph(filepath_html)
@@ -767,6 +1037,49 @@ class WordNetwork(object):
             self,
             cdict,
             ):
+        """
+        Get scores of terms, based on its mutuality.
+
+        Parameters
+        ----------
+
+        cdict: `gensim.corpora.dictionary.Dictionary`
+            A corpus dictionary for given documents.
+
+        Examples
+        --------
+
+        Example
+        -------
+
+        >>> import unipy_nlp.data_collector as udcl
+        >>> import unipy_nlp.preprocessor as uprc
+        >>> import unipy_nlp.network_plot as unet
+        >>> tpm = utpm.TopicModeler(sentence_list, tokenized)
+        >>> tpm.train_lda(...)
+        >>> tpm.visualize_lda_to_html(...)
+        >>> vnet = unet.WordNetwork(
+        ...     topic_freq_df=tpm.topic_freq_df,
+        ...     top_relevant_terms_df=tpm.top_relevant_terms_df,
+        ... )
+        >>> vnet.get_ngram(tokenized)
+        >>> vnet.draw(
+        ...     height="100%",
+        ...     width='800px',
+        ...     bgcolor='#ffffff',
+        ...     font_color='black',
+        ...     directed=True,
+        ...     topic_top_n=5,
+        ...     node_freq_threshold=100,
+        ...     show_buttons=True,
+        ... )
+        >>> vnet.save('data/_tmp_dump/network_plot/vnet.html')
+        >>> (score_dict,
+        ... score_dict_indiced) = vnet.get_topic_mutuality_score_dict(
+        ...     cdict=tpm.corpora_dict
+        ... )
+
+        """
 
         inode_list = self.intersection_node_list
         volume_score = None
@@ -806,9 +1119,66 @@ class WordNetwork(object):
             bow_corpus,
             repr_docs,
             save_ok=True,
-            savepath=None,
+            filepath=None,
             ):
+        """
+        Get representitive documents, based on the mutuality score of terms.
 
+        Parameters
+        ----------
+
+        bow_corpus: list
+            A nested list, which contains converted documents into a list of token words.
+
+        repr_docs: list
+            A list of raw documents.
+        
+        save_ok: bool (default: `True`)
+            An option to save.
+        
+        filepath: str (default: `None`)
+            A filepath to save.
+
+        Examples
+        --------
+
+        Example
+        -------
+
+        >>> import unipy_nlp.data_collector as udcl
+        >>> import unipy_nlp.preprocessor as uprc
+        >>> import unipy_nlp.network_plot as unet
+        >>> tpm = utpm.TopicModeler(sentence_list, tokenized)
+        >>> tpm.train_lda(...)
+        >>> tpm.visualize_lda_to_html(...)
+        >>> vnet = unet.WordNetwork(
+        ...     topic_freq_df=tpm.topic_freq_df,
+        ...     top_relevant_terms_df=tpm.top_relevant_terms_df,
+        ... )
+        >>> vnet.get_ngram(tokenized)
+        >>> vnet.draw(
+        ...     height="100%",
+        ...     width='800px',
+        ...     bgcolor='#ffffff',
+        ...     font_color='black',
+        ...     directed=True,
+        ...     topic_top_n=5,
+        ...     node_freq_threshold=100,
+        ...     show_buttons=True,
+        ... )
+        >>> vnet.save('data/_tmp_dump/network_plot/vnet.html')
+        >>> (score_dict,
+        ... score_dict_indiced) = vnet.get_topic_mutuality_score_dict(
+        ...     cdict=tpm.corpora_dict
+        ... )
+        >>> core_repr = vnet.get_network_scored_repr_docs(
+        ...     bow_corpus=repr_bow_corpus_doc,
+        ...     repr_docs=repr_sentenced,
+        ...     save_ok=True,
+        ...     savepath=None,
+        ... )
+
+        """
         scored = sorted(
             [
                 (i, self._get_bow_score(bow, self.i_score_dict_indiced))
@@ -836,12 +1206,16 @@ class WordNetwork(object):
         self.scored_repr_df = scored_repr_df
 
         if save_ok:
-            scored_repr_df.to_csv(
-                savepath,
-                index=False,
-                header=True,
-                encoding='utf-8',
-            )
+            if filepath is None:
+                raise ValueError("'filepath' should be given when 'save_ok' is `True`.")
+            else:
+                scored_repr_df.to_csv(
+                    filepath,
+                    index=False,
+                    header=True,
+                    encoding='utf-8',
+                )
+
         return scored_repr_df
 
 
