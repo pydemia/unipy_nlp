@@ -1,0 +1,31 @@
+--index-url https://pypi.python.org/simple/
+pandas == 0.23.4
+numpy == 1.16.0
+numpydoc == 0.7.0
+scipy == 1.2.0
+xlrd == 1.2.0
+scikit-learn == 0.20.2
+matplotlib == 3.0.1
+joblib == 0.13.2
+pyLDAvis == 2.1.2
+elasticsearch == 7.0.1
+# wordcloud == 1.4.1
+wordcloud == 1.5.0
+unidecode == 1.0.23
+gensim == 3.7.2
+mecab-python3 == 0.996.2
+# spellchecker == 0.4
+# konlpy == 0.5.1
+# jpype1 == 0.6.3
+tensorflow == 1.13.1
+tensorboard == 1.13.1
+sentencepiece == 0.1.4
+networkx == 2.1
+pyvis == 0.1.6.0
+jinja2 == 2.10.1
+scikit-image == 0.14.2
+ipython == 5.3.0
+prompt-toolkit == 1.0.16
+lxml == 4.3.3  # for hunspell make
+# hunspell == 0.5.5  # for to use this: apt-get install python-dev;apt-get install libhunspell-dev
+# xarray
