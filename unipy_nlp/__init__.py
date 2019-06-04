@@ -166,6 +166,6 @@ __all__ += ['__version__']
 __all__ += _backend.__all__
 __all__ += data_collector.__all__
 __all__ += tagger.__all__
-__all__ += preprocessor.__all__
-__all__ += analyzer.__all__
+__all__ += preprocessing.__all__
+__all__ += analyze.__all__
 

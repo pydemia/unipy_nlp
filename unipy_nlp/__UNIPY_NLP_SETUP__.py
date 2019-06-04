@@ -1,1 +1,1 @@
-__SETUP_OK__ = False
+__SETUP_OK__ = True
