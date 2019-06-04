@@ -192,13 +192,13 @@ class SphinxCommand(Command):
 setup(
     name=package_name,
     version=package_version,
-    description='Useful tools for Data Scientists',
+    description='NLP Toolkit: seamless MeCab & Topic Modeling, etc.',
     long_description=long_desc,
     python_requires='>= 3.6',
     url=doc_url,
     download_url=git_url,
-    author='Youngju Jaden Kim',
-    author_email='pydemia@gmail.com',
+    author='Youngju Jaden Kim, Jinwook Chung',
+    author_email='pydemia@gmail.com, jinwookchung.jin@gmail.com',
     license=license_str,
     classifiers=[
         # How Mature: 3 - Alpha, 4 - Beta, 5 - Production/Stable
