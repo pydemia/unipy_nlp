@@ -17,7 +17,7 @@ mecab-python3 == 0.996.2
 # spellchecker == 0.4
 # konlpy == 0.5.1
 # jpype1 == 0.6.3
-tensorflow == 1.13.1
+tensorflow == 2.6.4
 tensorboard == 1.13.1
 sentencepiece == 0.1.4
 networkx == 2.1
