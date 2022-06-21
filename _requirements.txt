@@ -1,6 +1,6 @@
 --index-url https://pypi.python.org/simple/
 pandas == 0.23.4
-numpy == 1.16.0
+numpy == 1.22.0
 numpydoc == 0.7.0
 scipy == 1.2.0
 xlrd == 1.2.0
