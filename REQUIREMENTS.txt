@@ -70,7 +70,7 @@ Pillow==6.0.0
 pluggy==0.11.0
 pockets==0.7.2
 prompt-toolkit==1.0.16
-protobuf==3.7.1
+protobuf==3.18.3
 ptyprocess==0.6.0
 py==1.8.0
 pybind11==2.2.4
